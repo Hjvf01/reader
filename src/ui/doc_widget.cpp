@@ -9,7 +9,13 @@ DocWidget::DocWidget(QWidget *parent) : QMainWindow(parent) {
 DocView* DocWidget::getView() const { return view; }
 DocToolBar* DocWidget::getToolBar() const { return tool_bar; }
 
+void DocWidget::setLeftDock(QWidget *widget) {
+    left_dock->setWidget(widget);
+    addDockWidget(Qt::LeftDockWidgetArea, left_dock);
+}
+
 DocWidget::~DocWidget() {
     delete view;
     delete tool_bar;
+    delete left_dock;
 }

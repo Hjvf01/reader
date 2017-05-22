@@ -10,23 +10,18 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
     to_dict_lang = "";
 
     table_of_content = new QTreeView;
-    toc_container = new QDockWidget;
-    toc_container->setWidget(table_of_content);
 
     webConnector();
     uiConnector();
     connector();
 
     table_of_content->setModel(handler->getDoc()->getToc());
-    ui->addDockWidget(Qt::LeftDockWidgetArea, toc_container);
+    ui->setLeftDock(table_of_content);
 
     emit getDictLangs();
 }
 
-DocWidgetHandler::~DocWidgetHandler() {
-    delete table_of_content;
-    delete toc_container;
-}
+DocWidgetHandler::~DocWidgetHandler() {}
 
 
 DocWidget* DocWidgetHandler::getWidget() const { return ui; }
@@ -114,11 +109,24 @@ void DocWidgetHandler::connector() {
     connect(
         handler, &DocHandler::pageChange, this, &DocWidgetHandler::onPageChange
     );
+    connect(
+        table_of_content, &QTreeView::activated,
+        this, &DocWidgetHandler::onTOCActivated
+    );
 }
 
 
 
             /* slots */
+void DocWidgetHandler::onTOCActivated(const QModelIndex &index) {
+    try {
+        int indx = handler->getDoc()->getPage(index);
+        handler->goTo(indx);
+    } catch(char const* err) {
+        qDebug() << err;
+    }
+}
+
 void DocWidgetHandler::onAbsoluteScaleChanged(const QString& value) {
     qDebug() << value;
 }

@@ -78,4 +78,6 @@ private slots:
     void testSceneRect(void);
     void testScrollingDown(void);
     void testTextBoxes(void);
+
+    void testGoTo(void);
 };

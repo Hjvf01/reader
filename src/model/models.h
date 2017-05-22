@@ -13,6 +13,7 @@ using std::pair;
 #include <QtGui/QPixmap>
 #include <QtCore/QSize>
 #include <QtCore/QPoint>
+#include <QtCore/QModelIndex>
 
 #include <QtXml/QDomDocument>
 #include <QtXml/QDomNode>
@@ -70,7 +71,6 @@ public:
     QList<QRectF> baseBoundingBoxes() const;
     QList<QRectF> actualBoundingBoxes() const;
 
-    //QRectF getTextBox(QPointF point);
     pair<QRectF, QString> getTextBox(QPointF point);
 
     bool isDrawn() const;
@@ -104,6 +104,7 @@ public:
     virtual double scaleFactorY() = 0;
 
     virtual QStandardItemModel* getToc(void) = 0;
+    virtual int getPage(const QModelIndex& index) const = 0;
 
     virtual bool operator ==(BaseDocument* other);
     virtual bool operator !=(BaseDocument* other);
@@ -122,6 +123,8 @@ class PDFDocument : public BaseDocument {
 
     using RenderHint = Poppler::Document::RenderHint;
     using RenderHints = vector<RenderHint>;
+    using TOCLink = Poppler::LinkDestination;
+    using TOCPair = pair<QStandardItem*, TOCLink*>;
 
     Poppler::Document* t_document;
     int t_current;
@@ -137,6 +140,7 @@ class PDFDocument : public BaseDocument {
         RenderHint::TextHinting,
         RenderHint::TextSlightHinting
     };
+    vector<TOCPair*> destinations;
 
 public:
     PDFDocument(QString p, QString n);
@@ -154,7 +158,7 @@ public:
     PDFPage* page(unsigned int index) const override;
 
     QStandardItemModel* getToc() override;
-
+    int getPage(const QModelIndex& index) const override;
 
     double scaleFactorX() override;
     double scaleFactorY() override;

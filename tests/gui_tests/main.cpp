@@ -10,9 +10,8 @@ int main(int argc, char** argv) {
     using Test = shared_ptr<QObject>;
 
     vector<Test> tests = {
-        Test(new SinglePageViewTest),
+        //Test(new SinglePageViewTest),
         Test(new MultPageViewTest),
-        //Test(new TranslatorDialogTest)
     };
 
     for(Test test: tests) QTest::qExec(test.get(), QStringList());

@@ -132,7 +132,7 @@ void MainHandler::onZoomIn() {
     if(index == -1)
         return;
     else
-        doc_handlers[index]->rel_resize(0.1);
+        doc_handlers[index]->resize(0.1);
 }
 
 void MainHandler::onZoomOut() {
@@ -141,7 +141,7 @@ void MainHandler::onZoomOut() {
     if(index == -1)
         return;
      else
-        doc_handlers[index]->rel_resize(-0.1);
+        doc_handlers[index]->resize(-0.1);
 }
 
 void MainHandler::onNextPage() {

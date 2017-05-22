@@ -20,6 +20,7 @@ using std::vector;
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QTreeView>
+#include <QtWidgets/QDockWidget>
 
 #include <QtGui/QWheelEvent>
 #include <QtGui/QKeyEvent>
@@ -126,6 +127,7 @@ class DocWidget : public QMainWindow {
 
     DocView* view = new DocView;
     DocToolBar* tool_bar = new DocToolBar;
+    QDockWidget* left_dock = new QDockWidget;
 
 public:
     DocWidget(QWidget* parent=nullptr);
@@ -133,6 +135,8 @@ public:
 
     DocView* getView(void) const;
     DocToolBar* getToolBar(void) const;
+
+    void setLeftDock(QWidget* widget);
 };
 
 

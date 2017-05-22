@@ -15,6 +15,7 @@ PDFDocument::~PDFDocument() {
     delete t_toc;
     delete t_doc_size;
     for(PDFPage* page: t_pages) delete page;
+    for(auto p: destinations) delete p->second;
 }
 
 void PDFDocument::init(void) {
@@ -109,9 +110,38 @@ void PDFDocument::make_model(QDomNode root, QStandardItem* model) {
         QDomElement elem = root.toElement();
         QStandardItem* new_item = new QStandardItem(elem.tagName());
         model->appendRow(new_item);
+        new_item->setEditable(false);
+
+        if(NOT elem.attributeNode("Destination").isNull()) {
+            destinations.push_back(new TOCPair(
+                new_item,
+                new TOCLink(
+                    elem.attributeNode("Destination").value()
+                )
+            ));
+        } else {
+            destinations.push_back(new TOCPair(
+                new_item,
+                t_document->linkDestination(
+                    elem.attributeNode("DestinationName").value()
+                )
+            ));
+        }
+
         if(NOT root.firstChild().isNull()) {
             make_model(root.firstChild(), new_item);
         }
         root = root.nextSibling();
     }
+
+    #undef NOT
+}
+
+
+int PDFDocument::getPage(const QModelIndex& index) const {
+    for(auto link: destinations)
+        if(link->first->index() == index)
+            return link->second->pageNumber() - 1;
+
+    return 0;
 }

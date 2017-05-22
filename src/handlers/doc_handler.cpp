@@ -41,17 +41,15 @@ DocHandler::DocHandler(DocView* ui, BaseDocument* doc) : QObject() {
 
 DocHandler::~DocHandler() {/*Этот класс не владеет ни одним указателем*/}
 
+
 int DocHandler::getCurrentPage() const { return current; }
 int DocHandler::getLocation() const { return location; }
 DocView* DocHandler::getView() const { return ui; }
 BaseDocument* DocHandler::getDoc() const { return document; }
 
-void DocHandler::abs_resize(double new_value) {
-    qDebug() << document->name() << " resizing";
-}
 
-void DocHandler::rel_resize(double step) {
-    qDebug() << document->name() << " resizing";
+void DocHandler::resize(double new_value) {
+    qDebug() << document->name() << " resizing: " << new_value;
 }
 
 
@@ -67,6 +65,7 @@ bool DocHandler::pointBeyondScene(float x, float y) {
 
     #undef OR
 }
+
 
 void DocHandler::onDoubleClick(QPointF point) {
     /*
@@ -90,6 +89,7 @@ void DocHandler::onDoubleClick(QPointF point) {
     }
 }
 
+
 void DocHandler::onScrollDown(int step) {
     /*
             Обрабатывает скролинг вниз
@@ -109,6 +109,7 @@ void DocHandler::onScrollDown(int step) {
     ui->getScroll()->setValue(location + step);
 }
 
+
 void DocHandler::onScrollUp(int step) {
     /*
             Обрабатывает скролинг вверх
@@ -125,6 +126,27 @@ void DocHandler::onScrollUp(int step) {
             drawPrev(current);
     }
     ui->getScroll()->setValue(location - step);
+}
+
+
+void DocHandler::eraseFront(Index index) {
+    PagePtr deleted = pages[0];
+    if(deleted != nullptr) {
+        document->page(index - buf_size)->cancelDrawn();
+        ui->getScene()->removeItem(deleted->page);
+    }
+    pages.pop_front();
+    delete deleted;
+}
+
+void DocHandler::eraseBack(Index index) {
+    PagePtr deleted = pages[pages.size() - 1];
+    if(deleted != nullptr) {
+        document->page(index + buf_size)->cancelDrawn();
+        ui->getScene()->removeItem(deleted->page);
+    }
+    pages.pop_back();
+    delete deleted;
 }
 
 void DocHandler::drawNext(unsigned int index) {
@@ -145,14 +167,7 @@ void DocHandler::drawNext(unsigned int index) {
     pages.push_back(page);
 
     assert(pages.size() == buf_size + 1);
-
-    PagePtr deleted = pages[0];
-    if(deleted != nullptr) {
-        document->page(current - buf_size)->cancelDrawn();
-        ui->getScene()->removeItem(deleted->page);
-    }
-    pages.pop_front();
-    delete deleted;
+    eraseFront(index);
     assert(pages.size() == buf_size);
 }
 
@@ -172,16 +187,10 @@ void DocHandler::drawPrev(unsigned int index) {
     pages.push_front(page);
 
     assert(pages.size() == buf_size + 1);
-
-    PagePtr deleted = pages[pages.size() - 1];
-    if(deleted != nullptr) {
-        document->page(current + buf_size)->cancelDrawn();
-        ui->getScene()->removeItem(deleted->page);
-    }
-    pages.pop_back();
-    delete deleted;
+    eraseBack(index);
     assert(pages.size() == buf_size);
 }
+
 
 void DocHandler::drawFirst() {
     /*
@@ -199,6 +208,7 @@ void DocHandler::drawFirst() {
     current = 0;
 }
 
+
 void DocHandler::start() {
     document->setDpi(
         scale_factor * ui->physicalDpiX(),
@@ -214,15 +224,51 @@ void DocHandler::start() {
     );
 }
 
+
 void DocHandler::fillBuffer(vector<Index> indexes) {
     for(Index i: indexes) drawNext(i);
 }
+
 
 vector<unsigned int> DocHandler::getIndexes() {
     vector<Index> res;
     for(PagePtr page: pages)
         res.push_back(page->index);
     return res;
+}
+
+
+void DocHandler::goTo(unsigned int index) {
+    for(Index i: getIndexes()) eraseBack(i);
+    assert(pages.size() == 0);
+    for(Index i = 0; i < buf_size; i++) pages.push_back(nullptr);
+    for(auto page: pages) assert(page == nullptr);
+    for(register Index i = 0; i < document->amountPages(); i++)
+        document->page(i)->cancelDrawn();
+
+    current = index;
+    Index last = document->amountPages() - 1;
+    if(document->amountPages() < buf_size) {
+        drawFirst();
+        ui->centerOn(pages[current]->page);
+        return;
+    } if(index < buf_size) {
+        drawFirst();
+        ui->centerOn(pages[current]->page);
+        return;
+    } if(index + buf_size < document->amountPages() - 1) {
+        for(Index i = index; i < index + buf_size; i++)
+            drawNext(i);
+        for(auto page: pages)
+            if(page->index == current) ui->centerOn(page->page);
+        return;
+    } if(index > document->amountPages() - buf_size) {
+        for(Index i = last - buf_size; i < document->amountPages(); i++)
+            drawNext(i);
+        for(auto page: pages)
+            if(page->index == current) ui->centerOn(page->page);
+        return;
+    }
 }
 
 
@@ -243,7 +289,6 @@ void DocHandler::onLookupReady(const QJsonObject result) {
     if(dialog_shown == false) tr_dialog.show();
     dialog_shown = true;
 }
-
 
 void DocHandler::onDialogClose() {
     dialog_shown = false;

@@ -5,7 +5,6 @@
 using std::deque;
 
 #include <QtWidgets/QGraphicsPixmapItem>
-#include <QtWidgets/QDockWidget>
 
 #include "../ui/ui.h"
 #include "../model/models.h"
@@ -51,8 +50,9 @@ public:
     BaseDocument* getDoc(void) const;
     deque<Page*> getPages() const { return pages; }
 
-    void rel_resize(double step);
-    void abs_resize(double new_value);
+    void resize(double new_value);
+
+    void goTo(unsigned int index);
 
 public slots:
     void onDoubleClick(QPointF point);
@@ -78,6 +78,9 @@ private:
 
     bool pointBeyondScene(float x, float y);
 
+    void eraseFront(Index index);
+    void eraseBack(Index index);
+
 signals:
     void translate(QString text);
     void lookup(QString text);
@@ -97,8 +100,8 @@ class DocWidgetHandler : public QObject {
 
     DocWidget* ui;       // не владеет
     DocHandler* handler; // не владеет
+
     QTreeView* table_of_content; //владеет
-    QDockWidget* toc_container;
 
     TrWorker trnsl;
     DictWorker dict;
@@ -144,6 +147,8 @@ public slots:
     void onError(QString error_msg);
 
     void onPageChange(unsigned int index);
+
+    void onTOCActivated(const QModelIndex& index);
 };
 
 
