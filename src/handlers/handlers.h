@@ -5,6 +5,7 @@
 using std::deque;
 
 #include <QtWidgets/QGraphicsPixmapItem>
+#include <QtWidgets/QDockWidget>
 
 #include "../ui/ui.h"
 #include "../model/models.h"
@@ -96,6 +97,8 @@ class DocWidgetHandler : public QObject {
 
     DocWidget* ui;       // не владеет
     DocHandler* handler; // не владеет
+    QTreeView* table_of_content; //владеет
+    QDockWidget* toc_container;
 
     TrWorker trnsl;
     DictWorker dict;

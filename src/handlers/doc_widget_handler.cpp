@@ -9,14 +9,24 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
     from_dict_lang = "";
     to_dict_lang = "";
 
+    table_of_content = new QTreeView;
+    toc_container = new QDockWidget;
+    toc_container->setWidget(table_of_content);
+
     webConnector();
     uiConnector();
     connector();
 
+    table_of_content->setModel(handler->getDoc()->getToc());
+    ui->addDockWidget(Qt::LeftDockWidgetArea, toc_container);
+
     emit getDictLangs();
 }
 
-DocWidgetHandler::~DocWidgetHandler() {}
+DocWidgetHandler::~DocWidgetHandler() {
+    delete table_of_content;
+    delete toc_container;
+}
 
 
 DocWidget* DocWidgetHandler::getWidget() const { return ui; }

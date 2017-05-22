@@ -13,7 +13,13 @@ using std::pair;
 #include <QtGui/QPixmap>
 #include <QtCore/QSize>
 #include <QtCore/QPoint>
+
 #include <QtXml/QDomDocument>
+#include <QtXml/QDomNode>
+#include <QtXml/QDomElement>
+
+#include <QtGui/QStandardItem>
+#include <QtGui/QStandardItemModel>
 
 #include <poppler-qt5.h>
 
@@ -97,6 +103,8 @@ public:
     virtual double scaleFactorX() = 0;
     virtual double scaleFactorY() = 0;
 
+    virtual QStandardItemModel* getToc(void) = 0;
+
     virtual bool operator ==(BaseDocument* other);
     virtual bool operator !=(BaseDocument* other);
 
@@ -145,11 +153,16 @@ public:
     vector<PDFPage*> pages() const override;
     PDFPage* page(unsigned int index) const override;
 
+    QStandardItemModel* getToc() override;
+
+
     double scaleFactorX() override;
     double scaleFactorY() override;
 
 protected:
     void rebuild(void) override;
     void build(void) override;
+
+    void make_model(QDomNode root, QStandardItem* model);
 };
 #endif // MODELS_H

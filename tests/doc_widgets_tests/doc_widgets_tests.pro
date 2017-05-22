@@ -25,7 +25,7 @@ SOURCES += main.cpp\
     ../../src/ui/doc_widget.cpp\
     #
     ../../src/model/base_document.cpp\
-    ../../src/model/pages.cpp\
+    ../../src/model/page.cpp\
     ../../src/model/pdf_document.cpp\
     #
     test_doc_widget.cpp \

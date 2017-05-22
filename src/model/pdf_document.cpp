@@ -7,6 +7,7 @@ PDFDocument::PDFDocument(QString p, QString n) : BaseDocument(p, n) {
     t_dpiy = 0.0;
     t_margin = 6;
     t_doc_size = new QSize(0, 0);
+    t_toc = nullptr;
 }
 
 PDFDocument::~PDFDocument() {
@@ -88,4 +89,29 @@ QString PDFDocument::metaInfo() const {
     QStringList keys = t_document->infoKeys();
     for(QString key: keys) out += key + ":\t" + t_document->info(key) + "\n";
     return out;
+}
+
+QStandardItemModel* PDFDocument::getToc() {
+    QStandardItemModel* model = new QStandardItemModel;
+    if(t_toc != nullptr) {
+        QStandardItem* model_root = model->invisibleRootItem();
+        QDomNode root = t_toc->firstChild();
+        make_model(root, model_root);
+    }
+    return model;
+}
+
+
+void PDFDocument::make_model(QDomNode root, QStandardItem* model) {
+    #define NOT !
+
+    while(NOT root.nextSibling().isNull()) {
+        QDomElement elem = root.toElement();
+        QStandardItem* new_item = new QStandardItem(elem.tagName());
+        model->appendRow(new_item);
+        if(NOT root.firstChild().isNull()) {
+            make_model(root.firstChild(), new_item);
+        }
+        root = root.nextSibling();
+    }
 }

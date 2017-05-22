@@ -19,6 +19,7 @@ using std::vector;
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QTreeView>
 
 #include <QtGui/QWheelEvent>
 #include <QtGui/QKeyEvent>
