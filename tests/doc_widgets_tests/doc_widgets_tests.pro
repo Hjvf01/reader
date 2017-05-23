@@ -23,6 +23,7 @@ SOURCES += main.cpp\
     ../../src/ui/menu_bar.cpp\
     ../../src/ui/doc_tool_bar.cpp\
     ../../src/ui/doc_widget.cpp\
+    ../../src/ui/doc_context_menu.cpp\
     #
     ../../src/model/base_document.cpp\
     ../../src/model/page.cpp\

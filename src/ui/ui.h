@@ -129,12 +129,53 @@ signals:
 };
 
 
+class DocContextMenu : public QMenu {
+    Q_OBJECT
+
+    using ShortCuts = vector<QKeySequence>;
+    using Actions = vector<QAction*>;
+
+    const Actions acts = {
+        new QAction("First Page"),
+        new QAction("Previous Page"),
+        new QAction("Next Page"),
+        new QAction("Last Page"),
+        new QAction("Zoom in"),
+        new QAction("Zoom out"),
+        new QAction("Full Screen")
+    };
+
+    const ShortCuts sh = {
+        QKeySequence(Qt::Key_Home),
+        QKeySequence(Qt::CTRL + Qt::Key_Left),
+        QKeySequence(Qt::CTRL + Qt::Key_Right),
+        QKeySequence(Qt::Key_End),
+        QKeySequence(Qt::CTRL + Qt::Key_Equal),
+        QKeySequence(Qt::CTRL + Qt::Key_Minus),
+        QKeySequence(Qt::CTRL + Qt::Key_F11)
+    };
+
+public:
+    DocContextMenu();
+    ~DocContextMenu() override;
+
+    QAction* getFirstPage() const { return acts[0]; }
+    QAction* getPrevPage() const { return acts[1]; }
+    QAction* getNextPage() const { return acts[2]; }
+    QAction* getLastPage() const { return acts[3]; }
+    QAction* getZoomIn() const { return acts[4]; }
+    QAction* getZoomOut() const { return acts[5]; }
+    QAction* getFullScreen() const { return acts[6]; }
+};
+
+
 class DocWidget : public QMainWindow {
     Q_OBJECT
 
     DocView* view = new DocView;
     DocToolBar* tool_bar = new DocToolBar;
     QDockWidget* left_dock = new QDockWidget;
+    DocContextMenu* menu = new DocContextMenu;
 
 public:
     DocWidget(QWidget* parent=nullptr);
@@ -142,8 +183,12 @@ public:
 
     DocView* getView(void) const;
     DocToolBar* getToolBar(void) const;
+    DocContextMenu* getContextMenu(void) const { return menu; }
 
     void setLeftDock(QWidget* widget);
+
+protected:
+    void mousePressEvent(QMouseEvent* event) override;
 };
 
 

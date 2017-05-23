@@ -14,6 +14,7 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
     webConnector();
     uiConnector();
     connector();
+    contextMenuConnector();
 
     table_of_content->setModel(handler->getDoc()->getToc());
     ui->setLeftDock(table_of_content);
@@ -123,6 +124,8 @@ void DocWidgetHandler::connector() {
         this, &DocWidgetHandler::onTOCActivated
     );
 }
+
+void DocWidgetHandler::contextMenuConnector() {}
 
 
 
@@ -234,4 +237,26 @@ void DocWidgetHandler::onChangePage(const QString &page) {
     handler->goTo((unsigned int)indx - 1);
 }
 
+void DocWidgetHandler::onNextPage() {
+    unsigned int i = handler->getCurrentPage();
+    if(i == handler->getDoc()->amountPages() - 1) return;
+    onChangePage(QString::number(i + 1));
+}
+
+void DocWidgetHandler::onPrevPage() {
+    unsigned int i = handler->getCurrentPage();
+    if(i == 0) return;
+    onChangePage(QString::number(i - 1));
+}
+
+void DocWidgetHandler::onFirstPage() {
+    onChangePage(QString::number(0));
+}
+
+void DocWidgetHandler::onLastPage() {
+    qDebug() << "lkj";
+    onChangePage(QString::number(handler->getDoc()->amountPages() - 1));
+}
+
+void DocWidgetHandler::onFullScreen() {}
 /* end slots */

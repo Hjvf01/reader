@@ -12,7 +12,7 @@ MainWindow::MainWindow() : QMainWindow() {
     status = new QStatusBar(this);
     setStatusBar(status);
 
-    setMinimumSize(500, 500);
+    setMinimumSize(640, 480);
 
     show();
 }

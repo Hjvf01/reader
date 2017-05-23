@@ -123,6 +123,7 @@ private:
     void webConnector(void);
     void uiConnector(void);
     void connector(void);
+    void contextMenuConnector(void);
 
 signals:
     void translate(const QString text, Parametrs parametrs);
@@ -150,6 +151,12 @@ public slots:
 
     void onTOCActivated(const QModelIndex& index);
     void onChangePage(const QString& page);
+
+    void onNextPage();
+    void onPrevPage();
+    void onLastPage();
+    void onFirstPage();
+    void onFullScreen();
 };
 
 

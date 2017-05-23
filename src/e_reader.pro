@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     ui/doc_tool_bar.cpp \
     ui/doc_widget.cpp \
     handlers/doc_widget_handler.cpp \
-    model/page.cpp
+    model/page.cpp \
+    ui/doc_context_menu.cpp
 
 HEADERS  += \
     ui/ui.h \

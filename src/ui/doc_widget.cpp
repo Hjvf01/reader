@@ -14,6 +14,14 @@ void DocWidget::setLeftDock(QWidget *widget) {
     addDockWidget(Qt::LeftDockWidgetArea, left_dock);
 }
 
+
+void DocWidget::mousePressEvent(QMouseEvent *event) {
+    if(event->button() == Qt::RightButton) {
+        menu->exec(event->globalPos());
+    }
+}
+
+
 DocWidget::~DocWidget() {
     delete view;
     delete tool_bar;
