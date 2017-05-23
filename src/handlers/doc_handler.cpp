@@ -48,8 +48,8 @@ DocView* DocHandler::getView() const { return ui; }
 BaseDocument* DocHandler::getDoc() const { return document; }
 
 
-void DocHandler::resize(double new_value) {
-    qDebug() << document->name() << " resizing: " << new_value;
+void DocHandler::resize(int new_value) {
+    scale_factor = (double)new_value / 100;
 }
 
 
@@ -233,7 +233,8 @@ void DocHandler::fillBuffer(vector<Index> indexes) {
 vector<unsigned int> DocHandler::getIndexes() {
     vector<Index> res;
     for(PagePtr page: pages)
-        res.push_back(page->index);
+        if(page != nullptr)
+            res.push_back(page->index);
     return res;
 }
 
@@ -241,9 +242,11 @@ vector<unsigned int> DocHandler::getIndexes() {
 void DocHandler::goTo(unsigned int index) {
     for(Index i: getIndexes()) eraseBack(i);
     assert(pages.size() == 0);
-    for(Index i = 0; i < buf_size; i++) pages.push_back(nullptr);
+    for(Index i = 0; i < buf_size; i++)
+        pages.push_back(nullptr);
     for(auto page: pages) assert(page == nullptr);
-    for(register Index i = 0; i < document->amountPages(); i++)
+    Index len = document->amountPages();
+    for(register Index i = 0; i < len; i++)
         document->page(i)->cancelDrawn();
 
     current = index;

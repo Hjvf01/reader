@@ -19,6 +19,11 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
     ui->setLeftDock(table_of_content);
 
     emit getDictLangs();
+
+    ui->getToolBar()->setPageNums(
+        QString::number(handler->getCurrentPage() + 1),
+        QString::number(handler->getDoc()->amountPages())
+    );
 }
 
 DocWidgetHandler::~DocWidgetHandler() {}
@@ -102,6 +107,10 @@ void DocWidgetHandler::uiConnector() {
         ui->getToolBar()->getZoomOut(), &QAction::triggered,
         this, &DocWidgetHandler::onZoomOut
     );
+    connect(
+        ui->getToolBar()->getCurrentPage(), &QLineEdit::textEdited,
+        this, &DocWidgetHandler::onChangePage
+    );
 }
 
 void DocWidgetHandler::connector() {
@@ -128,15 +137,19 @@ void DocWidgetHandler::onTOCActivated(const QModelIndex &index) {
 }
 
 void DocWidgetHandler::onAbsoluteScaleChanged(const QString& value) {
-    qDebug() << value;
+    handler->resize(value.toInt());
 }
 
 void DocWidgetHandler::onZoomIn() {
     #define INDEX ui->getToolBar()->getScaleBox()->currentIndex()
+    if(ui->getToolBar()->getScaleBox()->currentText() == QString("150"))
+        return;
     ui->getToolBar()->getScaleBox()->setCurrentIndex(INDEX + 1);
 }
 
 void DocWidgetHandler::onZoomOut() {
+    if(ui->getToolBar()->getScaleBox()->currentText() == QString("50"))
+        return;
     ui->getToolBar()->getScaleBox()->setCurrentIndex(INDEX - 1);
     #undef INDEX
 }
@@ -206,7 +219,19 @@ void DocWidgetHandler::onDictLangsReady(const QJsonArray result) {
 }
 
 void DocWidgetHandler::onPageChange(unsigned int index) {
-    /* Меняет номер текущей страницы в представлении */
-    qDebug() << "current page: " << index;
+    ui->getToolBar()->setCurrentPage(QString::number(index + 1));
 }
+
+void DocWidgetHandler::onChangePage(const QString &page) {
+    if(page == "") {
+        ui->getToolBar()->setCurrentPage(
+            QString::number(handler->getCurrentPage())
+        );
+        return;
+    }
+    int indx = page.toInt();
+    if(indx == 0) return;
+    handler->goTo((unsigned int)indx - 1);
+}
+
 /* end slots */

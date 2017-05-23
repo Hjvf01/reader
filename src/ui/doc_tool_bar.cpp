@@ -39,6 +39,20 @@ DocToolBar::~DocToolBar() {
     delete tr_to;
 }
 
+void DocToolBar::setPageNums(const QString current, const QString last) {
+    current_page.setText(current);
+    page_count.setText("\t<html><strong>" + last + "</strong></html>");
+    current_page.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    addWidget(&current_page);
+    addWidget(&page_count);
+    current_page.setValidator(new QIntValidator(1, last.toInt() - 1));
+}
+
+void DocToolBar::setCurrentPage(const QString num) {
+    current_page.setText(num);
+}
+
+
 QComboBox* DocToolBar::getScaleBox() const { return scale_box; }
 QComboBox* DocToolBar::getTrFrom()   const { return tr_from; }
 QComboBox* DocToolBar::getTrTo()     const { return tr_to; }

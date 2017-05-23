@@ -49,6 +49,9 @@ class TestMultPagesDocWidget : public BaseTest {
 public:
     TestMultPagesDocWidget();
     ~TestMultPagesDocWidget() override;
+
+private slots:
+    void testResize(void);
 };
 
 #endif // TESTS_H

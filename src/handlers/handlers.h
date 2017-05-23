@@ -50,7 +50,7 @@ public:
     BaseDocument* getDoc(void) const;
     deque<Page*> getPages() const { return pages; }
 
-    void resize(double new_value);
+    void resize(int new_value);
 
     void goTo(unsigned int index);
 
@@ -149,6 +149,7 @@ public slots:
     void onPageChange(unsigned int index);
 
     void onTOCActivated(const QModelIndex& index);
+    void onChangePage(const QString& page);
 };
 
 

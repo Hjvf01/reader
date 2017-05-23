@@ -24,6 +24,7 @@ void MainWindow::statusBarMessage(QString msg) {
     status->showMessage(msg);
 }
 
+
 MainWindow::~MainWindow() {
     delete menu;
     delete central_widget;

@@ -17,7 +17,7 @@ MultPageViewTest::~MultPageViewTest() {
 
 void MultPageViewTest::testSceneRect() { compareRect(); }
 
-void MultPageViewTest::testScrollingDown() {/*
+void MultPageViewTest::testScrollingDown() {
     int h = view->height();
     int d_h = doc->size()->height();
     int loc = controller->getLocation();
@@ -28,11 +28,11 @@ void MultPageViewTest::testScrollingDown() {/*
         cout << "current location: "
              << getCurrentLocation(loc) << " %" << endl;
         loc += 20;
-    }*/
+    }
 }
 
 
-void MultPageViewTest::testTextBoxes() {/*
+void MultPageViewTest::testTextBoxes() {
     auto len = doc->amountPages();
     for(unsigned int i = 0; i < len; i++) {
         for(auto base_box: doc->page(i)->baseBoundingBoxes()) {
@@ -49,7 +49,7 @@ void MultPageViewTest::testTextBoxes() {/*
             doc->page(i)->topX(), doc->page(i)->topY(),
             doc->page(i)->baseWidth(), doc->page(i)->baseHeight()
         ));
-    }*/
+    }
 }
 
 

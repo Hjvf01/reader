@@ -18,12 +18,12 @@ int main(int argc, char* argv[]) {
     using Tests = vector<Test>;
 
     Tests tests = {
-        Test(new TestSinglePageDocWidget),
+        //Test(new TestSinglePageDocWidget),
         Test(new TestMultPagesDocWidget),
     };
 
     for(Test test: tests) QTest::qExec(test.get(), QStringList());
-
+/*
     QUrl path(
         "/home/roma/ws/C/scrs/e_reader/tests/samples"
         "/1.The Fellowship of the Ring.pdf"
@@ -36,6 +36,6 @@ int main(int argc, char* argv[]) {
     QTreeView view;
     view.setModel(model);
     view.show();
-
+*/
     return app.exec();
 }

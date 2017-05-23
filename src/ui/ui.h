@@ -24,6 +24,7 @@ using std::vector;
 
 #include <QtGui/QWheelEvent>
 #include <QtGui/QKeyEvent>
+#include <QtGui/QDragEnterEvent>
 
 #include <QtCore/QDebug>
 #include <QtCore/QList>
@@ -119,6 +120,12 @@ public:
 
     QLineEdit* getCurrentPage(void);
     QLabel* getPageLbl(void);
+
+    void setPageNums(const QString current, const QString last);
+    void setCurrentPage(const QString num);
+
+signals:
+    void setPage(void);
 };
 
 

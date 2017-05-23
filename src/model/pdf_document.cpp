@@ -94,6 +94,7 @@ QString PDFDocument::metaInfo() const {
 
 QStandardItemModel* PDFDocument::getToc() {
     QStandardItemModel* model = new QStandardItemModel;
+    model->setHorizontalHeaderLabels(QStringList(name()));
     if(t_toc != nullptr) {
         QStandardItem* model_root = model->invisibleRootItem();
         QDomNode root = t_toc->firstChild();
