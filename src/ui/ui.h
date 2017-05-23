@@ -175,7 +175,6 @@ class DocWidget : public QMainWindow {
     DocView* view = new DocView;
     DocToolBar* tool_bar = new DocToolBar;
     QDockWidget* left_dock = new QDockWidget;
-    DocContextMenu* menu = new DocContextMenu;
 
 public:
     DocWidget(QWidget* parent=nullptr);
@@ -183,12 +182,14 @@ public:
 
     DocView* getView(void) const;
     DocToolBar* getToolBar(void) const;
-    DocContextMenu* getContextMenu(void) const { return menu; }
 
     void setLeftDock(QWidget* widget);
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;
+
+signals:
+    void menuConnectSignal(DocContextMenu* menu);
 };
 
 

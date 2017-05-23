@@ -17,7 +17,10 @@ void DocWidget::setLeftDock(QWidget *widget) {
 
 void DocWidget::mousePressEvent(QMouseEvent *event) {
     if(event->button() == Qt::RightButton) {
-        menu->exec(event->globalPos());
+        DocContextMenu menu;
+        emit menuConnectSignal(&menu);
+        auto res = menu.exec(event->globalPos());
+        qDebug() << res;
     }
 }
 

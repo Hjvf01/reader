@@ -14,7 +14,6 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
     webConnector();
     uiConnector();
     connector();
-    contextMenuConnector();
 
     table_of_content->setModel(handler->getDoc()->getToc());
     ui->setLeftDock(table_of_content);
@@ -112,6 +111,11 @@ void DocWidgetHandler::uiConnector() {
         ui->getToolBar()->getCurrentPage(), &QLineEdit::textEdited,
         this, &DocWidgetHandler::onChangePage
     );
+
+    connect(
+        ui, &DocWidget::menuConnectSignal,
+        this, &DocWidgetHandler::onContextMenuConnector
+    );
 }
 
 void DocWidgetHandler::connector() {
@@ -125,11 +129,39 @@ void DocWidgetHandler::connector() {
     );
 }
 
-void DocWidgetHandler::contextMenuConnector() {}
-
-
 
             /* slots */
+void DocWidgetHandler::onContextMenuConnector(DocContextMenu *menu) {
+    connect(
+        menu->getFirstPage(), &QAction::triggered,
+        this, &DocWidgetHandler::onFirstPage
+    );
+    connect(
+        menu->getLastPage(), &QAction::triggered,
+        this, &DocWidgetHandler::onLastPage
+    );
+    connect(
+        menu->getNextPage(), &QAction::triggered,
+        this, &DocWidgetHandler::onNextPage
+    );
+    connect(
+        menu->getPrevPage(), &QAction::triggered,
+        this, &DocWidgetHandler::onPrevPage
+    );
+    connect(
+        menu->getZoomIn(), &QAction::triggered,
+        this, &DocWidgetHandler::onZoomIn
+    );
+    connect(
+        menu->getZoomOut(), &QAction::triggered,
+        this, &DocWidgetHandler::onZoomOut
+    );
+    connect(
+        menu->getFullScreen(), &QAction::triggered,
+        this, &DocWidgetHandler::onFullScreen
+    );
+}
+
 void DocWidgetHandler::onTOCActivated(const QModelIndex &index) {
     try {
         int indx = handler->getDoc()->getPage(index);

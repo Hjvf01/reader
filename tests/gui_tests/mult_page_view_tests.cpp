@@ -22,11 +22,15 @@ void MultPageViewTest::testScrollingDown() {
     int d_h = doc->size()->height();
     int loc = controller->getLocation();
 
+    vector<unsigned int> indexes = controller->getIndexes();
     while(controller->getLocation() + h < d_h) {
+        vector<unsigned int> prev_pages = controller->getIndexes();
         QTest::keyClick(view, Qt::Key_Down);
         QVERIFY(loc == controller->getLocation());
-        cout << "current location: "
-             << getCurrentLocation(loc) << " %" << endl;
+        vector<unsigned int> after_pages = controller->getIndexes();
+        if(prev_pages[2] != after_pages[2])
+            cout << "current location: "
+                 << getCurrentLocation(loc) << " %" << endl;
         loc += 20;
     }
 }
@@ -49,46 +53,5 @@ void MultPageViewTest::testTextBoxes() {
             doc->page(i)->topX(), doc->page(i)->topY(),
             doc->page(i)->baseWidth(), doc->page(i)->baseHeight()
         ));
-    }
-}
-
-
-void MultPageViewTest::testGoTo() {
-    using Index = unsigned int;
-
-    controller->goTo(0);
-    QVERIFY(controller->getCurrentPage() == 0);
-    for(Index i = 0; i < doc->amountPages(); i++) {
-        if(i == 0 || i == 1 || i == 2)
-            QVERIFY(doc->page(i)->isDrawn() == true);
-        else
-            QVERIFY(doc->page(i)->isDrawn() == false);
-    }
-
-    controller->goTo(10);
-    QVERIFY(controller->getCurrentPage() == 10);
-    for(Index i = 0; i < doc->amountPages(); i++) {
-        if(i == 10 || i == 11 || i == 12)
-            QVERIFY(doc->page(i)->isDrawn() == true);
-        else
-            QVERIFY(doc->page(i)->isDrawn() == false);
-    }
-
-    controller->goTo(95);
-    QVERIFY(controller->getCurrentPage() == 95);
-    for(Index i = 0; i < doc->amountPages(); i++) {
-        if(i == 95 || i == 96 || i == 97)
-            QVERIFY(doc->page(i)->isDrawn() == true);
-        else
-            QVERIFY(doc->page(i)->isDrawn() == false);
-    }
-    Index last = doc->amountPages() - 1;
-    controller->goTo(last);
-    QVERIFY(controller->getCurrentPage() == last);
-    for(Index i = 0; i < doc->amountPages(); i++) {
-        if(i == last - 2 || i == last - 1 || i == last)
-            QVERIFY(doc->page(i)->isDrawn() == true);
-        else
-            QVERIFY(doc->page(i)->isDrawn() == false);
     }
 }

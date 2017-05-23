@@ -17,15 +17,19 @@ SOURCES += main.cpp\
     ../../src/handlers/doc_handler.cpp\
     ../../src/handlers/main_handler.cpp\
     ../../src/handlers/doc_widget_handler.cpp\
+    #
     ../../src/ui/doc_scene.cpp\
     ../../src/ui/doc_view.cpp\
     ../../src/ui/main_window.cpp\
     ../../src/ui/menu_bar.cpp\
     ../../src/ui/doc_tool_bar.cpp\
     ../../src/ui/doc_widget.cpp\
+    ../../src/ui/doc_context_menu.cpp\
+    #
     ../../src/model/base_document.cpp\
     ../../src/model/page.cpp\
     ../../src/model/pdf_document.cpp\
+    #
     mult_page_view_tests.cpp \
     single_page_viewe_test.cpp \
     base_test.cpp \

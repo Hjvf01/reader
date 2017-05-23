@@ -239,15 +239,29 @@ vector<unsigned int> DocHandler::getIndexes() {
 }
 
 
-void DocHandler::goTo(unsigned int index) {
-    for(Index i: getIndexes()) eraseBack(i);
-    assert(pages.size() == 0);
-    for(Index i = 0; i < buf_size; i++)
-        pages.push_back(nullptr);
-    for(auto page: pages) assert(page == nullptr);
-    Index len = document->amountPages();
-    for(register Index i = 0; i < len; i++)
+void DocHandler::erasePages() {
+    /*
+     * Полностью стирает страницы
+    */
+    vector<Index> indxs = getIndexes();
+
+    for(Page* page: pages) {
+        if(page != nullptr)
+            ui->getScene()->removeItem(page->page);
+        delete page;
+    }
+    pages.clear();
+    for(Index i: indxs)
         document->page(i)->cancelDrawn();
+
+    assert(pages.size() == 0);
+
+    pages = deque<Page*>(buf_size);
+}
+
+
+void DocHandler::goTo(unsigned int index) {
+    erasePages();
 
     current = index;
     Index last = document->amountPages() - 1;

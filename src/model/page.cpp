@@ -12,7 +12,7 @@ PDFPage::PDFPage(Page *page, int o_x, int o_y, double dpix, double dpiy) {
     this->dpix = dpix;
     this->dpiy = dpiy;
     t_offset = new QPoint(o_x, o_y);
-    drawn = false;
+    //drawn = false;
     scale_factor_x = dpix / DEFAULT_DPI;
     scale_factor_y = dpiy / DEFAULT_DPI;
 }
@@ -110,6 +110,23 @@ QList<pair<QRectF, QString>> PDFPage::actualTextBoxes() const {
 
     for(Text* box: boxes) delete box;
     return list;
+}
+
+
+pair<QRectF, QString> PDFPage::findExactOne(QString text) {
+    for(auto box: actualTextBoxes())
+        if(box.second == text) return box;
+
+    return pair<QRectF, QString>(QRectF(), QString());
+}
+
+vector<pair<QRectF, QString>> PDFPage::findAll(QString text) {
+    vector<pair<QRectF, QString>> result;
+    for(auto box: actualTextBoxes())
+        if(box.second == text)
+            result.push_back(box);
+
+    return result;
 }
 
 

@@ -33,7 +33,7 @@ class PDFPage {
     using Text = Poppler::TextBox;
     using TextPtr = shared_ptr<Text>;
 
-    bool drawn;
+    bool drawn = false;
     int width;
     int height;
     int actual_width;
@@ -72,6 +72,9 @@ public:
     QList<QRectF> actualBoundingBoxes() const;
 
     pair<QRectF, QString> getTextBox(QPointF point);
+
+    pair<QRectF, QString> findExactOne(QString text);
+    vector<pair<QRectF, QString>> findAll(QString text);
 
     bool isDrawn() const;
     void cancelDrawn();

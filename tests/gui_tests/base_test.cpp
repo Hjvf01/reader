@@ -19,6 +19,6 @@ BaseTest::~BaseTest() {
     delete path;
 }
 
-float BaseTest::getCurrentLocation(int loc) {
-    return loc / (doc->size()->height() / 100);
+double BaseTest::getCurrentLocation(int loc) {
+    return loc / ((double)doc->size()->height() / 100);
 }

@@ -52,6 +52,8 @@ public:
 
     void resize(int new_value);
 
+    vector<Index> getIndexes(void);
+
     void goTo(unsigned int index);
 
 public slots:
@@ -74,12 +76,12 @@ private:
     void start(void);
 
     void fillBuffer(vector<Index> indexes);
-    vector<Index> getIndexes(void);
 
     bool pointBeyondScene(float x, float y);
 
     void eraseFront(Index index);
     void eraseBack(Index index);
+    void erasePages();
 
 signals:
     void translate(QString text);
@@ -123,7 +125,6 @@ private:
     void webConnector(void);
     void uiConnector(void);
     void connector(void);
-    void contextMenuConnector(void);
 
 signals:
     void translate(const QString text, Parametrs parametrs);
@@ -151,6 +152,8 @@ public slots:
 
     void onTOCActivated(const QModelIndex& index);
     void onChangePage(const QString& page);
+
+    void onContextMenuConnector(DocContextMenu* menu);
 
     void onNextPage();
     void onPrevPage();

@@ -44,7 +44,7 @@ protected:
 
 protected:
     void compareRect(void);
-    float getCurrentLocation(int loc);
+    double getCurrentLocation(int loc);
 
 public:
     virtual ~BaseTest();
@@ -78,6 +78,4 @@ private slots:
     void testSceneRect(void);
     void testScrollingDown(void);
     void testTextBoxes(void);
-
-    void testGoTo(void);
 };

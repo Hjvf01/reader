@@ -52,6 +52,8 @@ public:
 
 private slots:
     void testResize(void);
+
+    void testGoTo(void);
 };
 
 #endif // TESTS_H
