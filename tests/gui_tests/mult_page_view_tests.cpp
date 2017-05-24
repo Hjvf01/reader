@@ -1,15 +1,7 @@
 #include "tests.h"
 
 
-MultPageViewTest::MultPageViewTest() : BaseTest() {
-    path = new QUrl(base + "/med_doc.pdf");
-    view = new DocView;
-    doc = new PDFDocument(path->path(), path->fileName());
-    controller = new DocHandler(view, doc);
-
-    docViewConnector(view, controller);
-    view->show();
-}
+MultPageViewTest::MultPageViewTest(QString name) : BaseTest(name) {}
 
 MultPageViewTest::~MultPageViewTest() {
     cout << "MultPage Destructor call" << endl;
@@ -22,7 +14,6 @@ void MultPageViewTest::testScrollingDown() {
     int d_h = doc->size()->height();
     int loc = controller->getLocation();
 
-    vector<unsigned int> indexes = controller->getIndexes();
     while(controller->getLocation() + h < d_h) {
         vector<unsigned int> prev_pages = controller->getIndexes();
         QTest::keyClick(view, Qt::Key_Down);
@@ -54,4 +45,16 @@ void MultPageViewTest::testTextBoxes() {
             doc->page(i)->baseWidth(), doc->page(i)->baseHeight()
         ));
     }
+}
+
+
+void MultPageViewTest::testSearch() {
+    QString text_to_search = "программирование";
+    pair<QRectF, QString> result =
+        doc->page(3)->findExactOne(text_to_search);
+    QVERIFY(result.second == text_to_search);
+
+    vector<pair<QRectF, QString>> results =
+        doc->page(3)->findAll(text_to_search);
+     qDebug() << results.size();
 }

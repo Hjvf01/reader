@@ -1,6 +1,17 @@
 #include "tests.h"
 
 
+BaseTest::BaseTest(QString name) {
+    path = new QUrl(base + name);
+    view = new DocView;
+    doc = new PDFDocument(path->path(), path->fileName());
+    controller = new DocHandler(view, doc);
+
+    docViewConnector(view, controller);
+    view->show();
+}
+
+
 void BaseTest::compareRect() {
     cout << "\t\t\t" << doc->name().toStdString() << endl;
     QRectF doc_rect(0, 0,

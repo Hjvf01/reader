@@ -39,16 +39,19 @@ using std::vector;
 class DocScene : public QGraphicsScene {
     Q_OBJECT
 
-    QGraphicsRectItem* hightlight;
+    QGraphicsRectItem* select_box = nullptr;
+    vector<QGraphicsRectItem*> select_boxes;
 
 public:
     DocScene();
     ~DocScene();
 
     void setHightLight(QRectF rect);
+    void setHightLights(vector<QRectF> rects);
     QGraphicsRectItem* getHightlight(void) const;
 
     void eraseHightlight(void);
+    void eraseHightlights(void);
 
 protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
@@ -176,12 +179,16 @@ class DocWidget : public QMainWindow {
     DocToolBar* tool_bar = new DocToolBar;
     QDockWidget* left_dock = new QDockWidget;
 
+    QAction* find_action = new QAction;
+    QKeySequence* find_seq;
+
 public:
     DocWidget(QWidget* parent=nullptr);
     ~DocWidget() override;
 
     DocView* getView(void) const;
     DocToolBar* getToolBar(void) const;
+    QAction* getFindAction(void) const;
 
     void setLeftDock(QWidget* widget);
 

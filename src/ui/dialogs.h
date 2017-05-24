@@ -1,6 +1,7 @@
 #ifndef DIALOGS_H
 #define DIALOGS_H
 
+
 #include <vector>
 using std::vector;
 
@@ -10,6 +11,8 @@ using std::vector;
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QSizePolicy>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
 
 #include <QtCore/QString>
 #include <QtCore/QJsonObject>
@@ -95,6 +98,51 @@ protected:
         for(QLabel* lbl: pos) pos_box.removeWidget(lbl);
         emit closeDialog();
     }
+};
+
+
+
+class FindText : public QDialog {
+    Q_OBJECT
+
+    QHBoxLayout main;
+    QLineEdit field;
+    QPushButton ok;
+    bool flag = false;
+
+public:
+    FindText() {
+         main.addWidget(&field);
+         field.setMinimumWidth(200);
+         main.addWidget(&ok);
+         ok.setText("Find");
+         setLayout(&main);
+         main.setSizeConstraint(QLayout::SetFixedSize);
+         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+         setModal(true);
+
+         connect(&ok, &QPushButton::pressed, [this](){
+            if(flag == false) {
+                emit this->findText(this->field.text());
+                flag = true;
+            }
+         });
+    }
+
+    ~FindText() = default;
+
+protected:
+    void closeEvent(QCloseEvent* event) override {
+        Q_UNUSED(event);
+
+        flag = false;
+        emit closeDialog();
+    }
+
+signals:
+    void findText(const QString text);
+    void closeDialog();
+
 };
 
 #endif // DIALOGS_H

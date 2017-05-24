@@ -108,6 +108,8 @@ class DocWidgetHandler : public QObject {
     TrWorker trnsl;
     DictWorker dict;
 
+    FindText dialog;
+
     QMap<QString, QStringList> dict_langs;
 
     QString from_tr_lang;
@@ -136,6 +138,7 @@ signals:
 public slots:
     void onAbsoluteScaleChanged(const QString& value);
 
+private slots:
     void onTrFromChanged(const QString& lang_name);
     void onTrToChanged(const QString& lang_name);
 
@@ -160,6 +163,10 @@ public slots:
     void onLastPage();
     void onFirstPage();
     void onFullScreen();
+
+    void onFind(const QString text);
+    void onFindDialogShow(void);
+    void onFindDialogClose(void);
 };
 
 

@@ -1,14 +1,7 @@
 #include "tests.h"
 
-SinglePageViewTest::SinglePageViewTest() : BaseTest() {
-    path = new QUrl(base + "/single_page.pdf");
-    view = new DocView;
-    doc = new PDFDocument(path->path(), path->fileName());
-    controller = new DocHandler(view, doc);
 
-    docViewConnector(view, controller);
-    view->show();
-}
+SinglePageViewTest::SinglePageViewTest(QString name) : BaseTest(name) {}
 
 SinglePageViewTest::~SinglePageViewTest() {
     cout << "SinglePage Destructor call" << endl;
@@ -65,4 +58,13 @@ void SinglePageViewTest::testDoubleClicked() {
 
     view->getScene()->doubleClick(points[3]);
     QVERIFY(len + 1 == view->getScene()->items().size());
+}
+
+
+void SinglePageViewTest::testSearch() {
+    pair<QRectF, QString> result = doc->page(0)->findExactOne("This");
+    QVERIFY(result.second == QString("This"));
+
+    result = doc->page(0)->findExactOne("serif");
+    QVERIFY(result.second == QString());
 }

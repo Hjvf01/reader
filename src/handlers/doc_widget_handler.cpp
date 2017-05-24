@@ -127,6 +127,15 @@ void DocWidgetHandler::connector() {
         table_of_content, &QTreeView::activated,
         this, &DocWidgetHandler::onTOCActivated
     );
+    connect(&dialog, &FindText::findText, this, &DocWidgetHandler::onFind);
+    connect(
+        &dialog, &FindText::closeDialog,
+        this, &DocWidgetHandler::onFindDialogClose
+    );
+    connect(
+        ui->getFindAction(), &QAction::triggered,
+        this, &DocWidgetHandler::onFindDialogShow
+    );
 }
 
 
@@ -291,4 +300,30 @@ void DocWidgetHandler::onLastPage() {
 }
 
 void DocWidgetHandler::onFullScreen() {}
+
+
+void DocWidgetHandler::onFindDialogShow() {
+    dialog.show();
+}
+
+void DocWidgetHandler::onFind(const QString text) {
+    vector<pair<QRectF, QString>> results;
+    vector<unsigned int> indexes = handler->getIndexes();
+
+    for(unsigned int i: indexes)
+        for(auto result: handler->getDoc()->page(i)->findAll(text)) {
+            results.push_back(result);
+        }
+
+    vector<QRectF> boxes;
+    for(auto result: results)
+        boxes.push_back(result.first);
+
+    ui->getView()->getScene()->setHightLights(boxes);
+}
+
+void DocWidgetHandler::onFindDialogClose() {
+    ui->getView()->getScene()->eraseHightlights();
+}
+
 /* end slots */

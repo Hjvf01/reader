@@ -4,10 +4,15 @@
 DocWidget::DocWidget(QWidget *parent) : QMainWindow(parent) {
     addToolBar(tool_bar);
     setCentralWidget(view);
+
+    find_seq = new QKeySequence("Ctrl+F");
+    find_action->setShortcut(*find_seq);
+    addAction(find_action);
 }
 
 DocView* DocWidget::getView() const { return view; }
 DocToolBar* DocWidget::getToolBar() const { return tool_bar; }
+QAction* DocWidget::getFindAction() const { return find_action; }
 
 void DocWidget::setLeftDock(QWidget *widget) {
     left_dock->setWidget(widget);

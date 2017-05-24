@@ -47,6 +47,7 @@ protected:
     double getCurrentLocation(int loc);
 
 public:
+    BaseTest(QString name);
     virtual ~BaseTest();
 };
 
@@ -55,7 +56,7 @@ class SinglePageViewTest : public BaseTest {
     Q_OBJECT
 
 public:
-    explicit SinglePageViewTest();
+    explicit SinglePageViewTest(QString name);
     ~SinglePageViewTest() override;
 
 private slots:
@@ -64,6 +65,7 @@ private slots:
     void testScrollingUp(void);
     void testTextBoxes(void);
     void testDoubleClicked(void);
+    void testSearch(void);
 };
 
 
@@ -71,11 +73,12 @@ class MultPageViewTest : public BaseTest {
     Q_OBJECT
 
 public:
-    MultPageViewTest();
+    MultPageViewTest(QString name);
     ~MultPageViewTest() override;
 
 private slots:
     void testSceneRect(void);
     void testScrollingDown(void);
     void testTextBoxes(void);
+    void testSearch(void);
 };
