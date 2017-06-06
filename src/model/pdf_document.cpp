@@ -36,6 +36,8 @@ void PDFDocument::setDpi(double dpix, double dpiy) {
     } else {
         t_dpix = dpix;
         t_dpiy = dpiy;
+        t_doc_size->setHeight(0);
+        t_doc_size->setWidth(0);
         rebuild();
    }
 }
@@ -113,21 +115,20 @@ void PDFDocument::make_model(QDomNode root, QStandardItem* model) {
         model->appendRow(new_item);
         new_item->setEditable(false);
 
-        if(NOT elem.attributeNode("Destination").isNull()) {
+        if(NOT elem.attributeNode("Destination").isNull())
             destinations.push_back(new TOCPair(
                 new_item,
                 new TOCLink(
                     elem.attributeNode("Destination").value()
                 )
             ));
-        } else {
+        else
             destinations.push_back(new TOCPair(
                 new_item,
                 t_document->linkDestination(
                     elem.attributeNode("DestinationName").value()
                 )
             ));
-        }
 
         if(NOT root.firstChild().isNull()) {
             make_model(root.firstChild(), new_item);

@@ -11,8 +11,8 @@ int main(int argc, char** argv) {
     using Test = shared_ptr<QObject>;
 
     vector<Test> tests = {
-        //Test(new SinglePageViewTest("/single_page.pdf")),
-        //Test(new MultPageViewTest("/med_doc.pdf")),
+        Test(new SinglePageViewTest("/single_page.pdf")),
+        Test(new MultPageViewTest("/med_doc.pdf")),
     };
 
     for(Test test: tests) QTest::qExec(test.get(), QStringList());

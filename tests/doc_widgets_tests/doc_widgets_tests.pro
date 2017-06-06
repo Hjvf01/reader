@@ -23,7 +23,7 @@ SOURCES += main.cpp\
     ../../src/ui/menu_bar.cpp\
     ../../src/ui/doc_tool_bar.cpp\
     ../../src/ui/doc_widget.cpp\
-    ../../src/ui/doc_context_menu.cpp\
+    ../../src/ui/scroll_bar.cpp\
     #
     ../../src/model/base_document.cpp\
     ../../src/model/page.cpp\
@@ -38,3 +38,5 @@ HEADERS += ../../src/handlers/handlers.h\
     ../../src/model/models.h\
     ../../src/network/network.h\
     tests.h
+
+RESOURCES = ../../src/reader.qrc

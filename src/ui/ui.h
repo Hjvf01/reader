@@ -21,10 +21,12 @@ using std::vector;
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QTreeView>
 #include <QtWidgets/QDockWidget>
+#include <QtWidgets/QPushButton>
 
 #include <QtGui/QWheelEvent>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QDragEnterEvent>
+#include <QtGui/QIcon>
 
 #include <QtCore/QDebug>
 #include <QtCore/QList>
@@ -63,6 +65,11 @@ signals:
 
 class ScrollBar : public QScrollBar {
     Q_OBJECT
+
+public:
+    ScrollBar(QWidget* parent);
+    ScrollBar();
+    ~ScrollBar() override;
 };
 
 
@@ -71,7 +78,7 @@ class DocView : public QGraphicsView {
 
     DocScene* scene;
     ScrollBar* scroll;
-    int scroll_step;
+    int scroll_step = 20;
 
 public:
     DocView(QWidget* parent=nullptr);
@@ -79,7 +86,7 @@ public:
 
     void initScene(QSize* size);
 
-    QScrollBar* getScroll(void) const;
+    ScrollBar* getScroll(void) const;
     DocScene* getScene(void) const;
 
 signals:
@@ -95,21 +102,31 @@ protected:
 class DocToolBar : public QToolBar {
     Q_OBJECT
 
-    QAction* zoom_in;
-    QAction* zoom_out;
-    QComboBox* scale_box;
+    static const int ICON_SIZE = 20;
     const QList<QString> scale_factors = {
         "50", "60", "70", "80", "90", "100",
         "110", "120", "130", "140", "150"
     };
-    QLabel* tr_title;
-    QLabel* tr_from_title;
-    QLabel* tr_to_title;
+
+    QAction* zoom_in;
+    QAction* zoom_out;
+    QComboBox* scale_box;
+
+    QLabel tr_title;
+    QLabel sep;
     QComboBox* tr_from;
     QComboBox* tr_to;
+    QAction* reload;
 
+    QLabel page_title;
     QLineEdit current_page;
     QLabel page_count;
+
+    QAction *fst_page,
+            *prev_page,
+            *next_page,
+            *last_page,
+            *find;
 
 public:
     DocToolBar(QWidget* parent=nullptr);
@@ -118,8 +135,17 @@ public:
     QComboBox* getScaleBox(void) const;
     QComboBox* getTrFrom(void)   const;
     QComboBox* getTrTo(void)     const;
-    QAction* getZoomIn(void)     const;
-    QAction* getZoomOut(void)    const;
+
+    QAction* getZoomIn(void)  const;
+    QAction* getZoomOut(void) const;
+
+    QAction* getReload(void) const;
+
+    QAction* getFstPage(void)  const;
+    QAction* getPrevPage(void) const;
+    QAction* getNextPage(void) const;
+    QAction* getLastPage(void) const;
+    QAction* getFind(void)     const;
 
     QLineEdit* getCurrentPage(void);
     QLabel* getPageLbl(void);
@@ -127,60 +153,66 @@ public:
     void setPageNums(const QString current, const QString last);
     void setCurrentPage(const QString num);
 
+private:
+    void initScaleMenu(void);
+    void initTranslatorMenu(void);
+    void initPageNavMenu(void);
+
 signals:
     void setPage(void);
-};
-
-
-class DocContextMenu : public QMenu {
-    Q_OBJECT
-
-    using ShortCuts = vector<QKeySequence>;
-    using Actions = vector<QAction*>;
-
-    const Actions acts = {
-        new QAction("First Page"),
-        new QAction("Previous Page"),
-        new QAction("Next Page"),
-        new QAction("Last Page"),
-        new QAction("Zoom in"),
-        new QAction("Zoom out"),
-        new QAction("Full Screen")
-    };
-
-    const ShortCuts sh = {
-        QKeySequence(Qt::Key_Home),
-        QKeySequence(Qt::CTRL + Qt::Key_Left),
-        QKeySequence(Qt::CTRL + Qt::Key_Right),
-        QKeySequence(Qt::Key_End),
-        QKeySequence(Qt::CTRL + Qt::Key_Equal),
-        QKeySequence(Qt::CTRL + Qt::Key_Minus),
-        QKeySequence(Qt::CTRL + Qt::Key_F11)
-    };
-
-public:
-    DocContextMenu();
-    ~DocContextMenu() override;
-
-    QAction* getFirstPage() const { return acts[0]; }
-    QAction* getPrevPage() const { return acts[1]; }
-    QAction* getNextPage() const { return acts[2]; }
-    QAction* getLastPage() const { return acts[3]; }
-    QAction* getZoomIn() const { return acts[4]; }
-    QAction* getZoomOut() const { return acts[5]; }
-    QAction* getFullScreen() const { return acts[6]; }
 };
 
 
 class DocWidget : public QMainWindow {
     Q_OBJECT
 
+    using Actions = vector<QAction*>;
+    using ShortCuts = vector<QKeySequence>;
+    using Icons = vector<QIcon>;
+
     DocView* view = new DocView;
     DocToolBar* tool_bar = new DocToolBar;
     QDockWidget* left_dock = new QDockWidget;
 
-    QAction* find_action = new QAction;
-    QKeySequence* find_seq;
+    const Actions context_menu = {
+        new QAction("Find"),                //0
+        new QAction(),                      //1
+        new QAction("First Page"),          //2
+        new QAction("Previous Page"),       //3
+        new QAction("Next Page"),           //4
+        new QAction("Last Page"),           //5
+        new QAction(),                      //6
+        new QAction("Zoom in"),             //7
+        new QAction("Zoom out"),            //8
+        new QAction(),                      //9
+        new QAction("Full Screen")          //10
+    };
+    const ShortCuts context_menu_short = {
+        QKeySequence(Qt::CTRL + Qt::Key_F),
+        QKeySequence(),
+        QKeySequence(Qt::Key_Home),
+        QKeySequence(Qt::CTRL + Qt::Key_Left),
+        QKeySequence(Qt::CTRL + Qt::Key_Right),
+        QKeySequence(Qt::Key_End),
+        QKeySequence(),
+        QKeySequence(Qt::CTRL + Qt::Key_Equal),
+        QKeySequence(Qt::CTRL + Qt::Key_Minus),
+        QKeySequence(),
+        QKeySequence(Qt::CTRL + Qt::Key_F11)
+    };
+    const Icons context_menu_icons = {
+        QIcon(":/find.png"),
+        QIcon(),
+        QIcon(":/first_page.png"),
+        QIcon(":/prev_page.png"),
+        QIcon(":/next_page.png"),
+        QIcon(":/last_page.png"),
+        QIcon(),
+        QIcon(":/zoom_in.png"),
+        QIcon(":/zoom_out.png"),
+        QIcon(),
+        QIcon(":/fullscreen.png"),
+    };
 
 public:
     DocWidget(QWidget* parent=nullptr);
@@ -188,15 +220,17 @@ public:
 
     DocView* getView(void) const;
     DocToolBar* getToolBar(void) const;
+
     QAction* getFindAction(void) const;
+    QAction* getFirstPage(void) const;
+    QAction* getPrevPage(void) const;
+    QAction* getNextPage(void) const;
+    QAction* getLastPage(void) const;
+    QAction* getZoomIn(void) const;
+    QAction* getZoomOut(void) const;
+    QAction* getFullScreen(void) const;
 
     void setLeftDock(QWidget* widget);
-
-protected:
-    void mousePressEvent(QMouseEvent* event) override;
-
-signals:
-    void menuConnectSignal(DocContextMenu* menu);
 };
 
 
@@ -206,6 +240,7 @@ class MenuBar : public QMenuBar {
     using ShortCuts = vector<QKeySequence>;
     using MenuList = vector<QMenu*>;
     using Actions = vector<QAction*>;
+    using Icons = vector<QIcon>;
 
     const MenuList menu_groups = {
         new QMenu("File"),
@@ -261,6 +296,23 @@ class MenuBar : public QMenuBar {
         QKeySequence("Ctrl+H")
     };
 
+    const Icons file_group_icons = {
+        QIcon(":/file.png"),
+        QIcon(":/print.png"),
+        QIcon(":/property.png"),
+        QIcon(":/close.png"),
+        QIcon(":/quit.png"),
+    };
+    const Icons view_group_icons = {
+        QIcon(":/zoom_in.png"),
+        QIcon(":/zoom_out.png"),
+        QIcon(":/first_page.png"),
+        QIcon(":/prev_page.png"),
+        QIcon(":/next_page.png"),
+        QIcon(":/last_page.png"),
+        QIcon(":/fullscreen.png"),
+    };
+
 public:
     MenuBar(QMainWindow* parent);
     ~MenuBar() override;
@@ -276,6 +328,11 @@ public:
     QAction* getNextPage(void)   const;
     QAction* getPrevPage(void)   const;
     QAction* getFullScreen(void) const;
+
+    QAction* getHightlight(void)    const;
+    QAction* getUnderlineText(void) const;
+    QAction* getDashedText(void)    const;
+    QAction* getTranslator(void)    const;
 
     QAction* getHelp(void)  const;
     QAction* getAbout(void) const;

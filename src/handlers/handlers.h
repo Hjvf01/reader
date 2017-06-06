@@ -33,7 +33,6 @@ class DocHandler : public QObject {
     Index current;
     deque<PagePtr> pages;
     BaseDocument* document;
-    double dpix; double dpiy;
     int location;
     double scale_factor;
     TrDialog tr_dialog;
@@ -43,7 +42,7 @@ public:
     DocHandler(DocView* widget, BaseDocument* doc);
     ~DocHandler();
 
-    int getCurrentPage(void) const;
+    unsigned int getCurrentPage(void) const;
     int getLocation(void) const;
 
     DocView* getView(void) const;
@@ -61,6 +60,7 @@ public slots:
 
     void onScrollUp(int step);
     void onScrollDown(int step);
+    void onScrollTriggered(int action);
 
     void onError(QString error_msg);
     void onTranslateReady(const QJsonObject result);
@@ -69,6 +69,12 @@ public slots:
     void onDialogClose(void);
 
 private:
+    void scrollBarConnector(void);
+    void sceneConnector(void);
+
+    void handleNext(int location);
+    void handlePrev(int location);
+
     void drawNext(unsigned int index);
     void drawPrev(unsigned int index);
     void drawFirst(void);
@@ -124,9 +130,17 @@ public:
     DocWidget* getWidget(void) const;
 
 private:
-    void webConnector(void);
-    void uiConnector(void);
-    void connector(void);
+    void scaleMenuConnector(void);
+    void translatorMenuConnector(void);
+    void pageNavConnector(void);
+
+    void docHandlerConnector(void);
+    void contextMenuConnector(void);
+    void translatorConnector(void);
+
+
+    void toolBarConnectors(void);
+    void widgetConnectors(void);
 
 signals:
     void translate(const QString text, Parametrs parametrs);
@@ -138,15 +152,14 @@ signals:
 public slots:
     void onAbsoluteScaleChanged(const QString& value);
 
-private slots:
+    void onZoomIn(void);
+    void onZoomOut(void);
+
     void onTrFromChanged(const QString& lang_name);
     void onTrToChanged(const QString& lang_name);
 
     void onTranslate(const QString text);
     void onLookup(const QString text);
-
-    void onZoomIn(void);
-    void onZoomOut(void);
 
     void onDictLangsReady(const QJsonArray langs);
     void onError(QString error_msg);
@@ -155,8 +168,6 @@ private slots:
 
     void onTOCActivated(const QModelIndex& index);
     void onChangePage(const QString& page);
-
-    void onContextMenuConnector(DocContextMenu* menu);
 
     void onNextPage();
     void onPrevPage();
@@ -167,13 +178,14 @@ private slots:
     void onFind(const QString text);
     void onFindDialogShow(void);
     void onFindDialogClose(void);
+
+private slots:
+    void onReload(void);
 };
 
 
 class MainHandler : public QObject {
     Q_OBJECT
-
-    using Parametr = QPair<QString, QString>;
 
     MainWindow* ui; // не владеет
     vector<DocWidget*> widgets;
@@ -206,6 +218,11 @@ public slots:
     void onNextPage(void);
     void onPrevPage(void);
     void onFullScreen(void);
+
+    void onHighlight(void);
+    void onUnderline(void);
+    void onDashed(void);
+    void onTranslator(void);
 
     void onHelp(void);
     void onAbout(void);

@@ -15,14 +15,14 @@ int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
     using Test = shared_ptr<QObject>;
-    using Tests = vector<Test>;
 
-    Tests tests = {
-        Test(new TestSinglePageDocWidget),
-        Test(new TestMultPagesDocWidget),
+    vector<Test> tests = {
+        Test(new TestSinglePageDocWidget("/single_page.pdf")),
+        Test(new TestMultPagesDocWidget("/med_doc.pdf")),
     };
 
-    for(Test test: tests) QTest::qExec(test.get(), QStringList());
+    for(Test test: tests)
+        QTest::qExec(test.get(), QStringList());
 
     return app.exec();
 }

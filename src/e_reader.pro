@@ -33,11 +33,14 @@ SOURCES += main.cpp\
     ui/doc_widget.cpp \
     handlers/doc_widget_handler.cpp \
     model/page.cpp \
-    ui/doc_context_menu.cpp
+    ui/scroll_bar.cpp
 
 HEADERS  += \
     ui/ui.h \
     handlers/handlers.h \
     model/models.h \
     ui/dialogs.h \
-    network/network.h
+    network/network.h \
+    conectors/connectors.h
+
+RESOURCES = reader.qrc

@@ -20,8 +20,8 @@ void MultPageViewTest::testScrollingDown() {
         QVERIFY(loc == controller->getLocation());
         vector<unsigned int> after_pages = controller->getIndexes();
         if(prev_pages[2] != after_pages[2])
-            cout << "current location: "
-                 << getCurrentLocation(loc) << " %" << endl;
+            //cout << "current location: "
+            //     << getCurrentLocation(loc) << " %" << endl;
         loc += 20;
     }
 }

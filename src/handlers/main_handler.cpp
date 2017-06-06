@@ -88,8 +88,6 @@ void MainHandler::createDocWidget(QUrl path) {
     handlers.push_back(handler);
 
     ui->getCentral()->addTab(widget, doc->name());
-
-    docViewConnector(widget->getView(), doc_handler);
     amount++;
 }
 
@@ -158,21 +156,29 @@ void MainHandler::onFullScreen() {
 
 void MainHandler::onHelp() {
     ui->statusBarMessage("help");
-    QString msg =
-          "File Menu\n"
-            "Ctrl+O:\tOpen\n"
-            "Ctrl+P:\tPrint\n"
-            "Alt+Return:\tDocument Info\n"
-            "Ctrl+W:\tClose Document\n"
-            "Ctrl+Q:\tQuit\n\n"
-          "Info Menu\n"
-            "Ctrl+H:\tHelp\n";
-   QMessageBox::information(ui, "Help", msg);
+    HelpDialog dialog;
+    dialog.exec();
 }
 
 void MainHandler::onAbout() {
     ui->statusBarMessage("about");
     QMessageBox::information(ui, "About", "v - 0.1");
+}
+
+void MainHandler::onHighlight() {
+    ui->statusBarMessage("hightlight");
+}
+
+void MainHandler::onUnderline() {
+    ui->statusBarMessage("underline");
+}
+
+void MainHandler::onDashed() {
+    ui->statusBarMessage("dashed");
+}
+
+void MainHandler::onTranslator() {
+    ui->statusBarMessage("translator");
 }
 
 

@@ -11,14 +11,11 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
 
     table_of_content = new QTreeView;
 
-    webConnector();
-    uiConnector();
-    connector();
+    widgetConnectors();
+    toolBarConnectors();
 
     table_of_content->setModel(handler->getDoc()->getToc());
     ui->setLeftDock(table_of_content);
-
-    emit getDictLangs();
 
     ui->getToolBar()->setPageNums(
         QString::number(handler->getCurrentPage() + 1),
@@ -26,13 +23,15 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
     );
 }
 
-DocWidgetHandler::~DocWidgetHandler() {}
+DocWidgetHandler::~DocWidgetHandler() {
+    //table_of_content удаляется автоматически
+}
 
 
 DocWidget* DocWidgetHandler::getWidget() const { return ui; }
 
 
-void DocWidgetHandler::webConnector() {
+void DocWidgetHandler::translatorConnector() {
     /* Соединяет сигналы обработчика представления документа и переводчика */
     connect(
         handler, &DocHandler::translate,
@@ -76,49 +75,92 @@ void DocWidgetHandler::webConnector() {
     );
 }
 
-void DocWidgetHandler::uiConnector() {
-    /* Соединяет сигналы представления этого обработчика и его слоты */
-   QComboBox* s = ui->getToolBar()->getScaleBox();
+
+void DocWidgetHandler::scaleMenuConnector() {
+    #define TOOLBAR   ui->getToolBar()
+    #define SCALE_BOX TOOLBAR->getScaleBox()
+    #define ZOOM_IN   TOOLBAR->getZoomIn()
+    #define ZOOM_OUT  TOOLBAR->getZoomOut()
 
     connect(
-        s, static_cast<void(QComboBox::*)(const QString &)>
-            (&QComboBox::currentIndexChanged),
+        SCALE_BOX, static_cast<void(QComboBox::*)(const QString &)>
+        (&QComboBox::currentIndexChanged),
         this, &DocWidgetHandler::onAbsoluteScaleChanged
     );
-
-    s = ui->getToolBar()->getTrFrom();
     connect(
-        s, static_cast<void(QComboBox::*)(const QString &)>
+        ZOOM_IN, &QAction::triggered, this, &DocWidgetHandler::onZoomIn
+    );
+    connect(
+        ZOOM_OUT, &QAction::triggered, this, &DocWidgetHandler::onZoomOut
+    );
+
+    #undef ZOOM_OUT
+    #undef ZOOM_IN
+    #undef SCALE_BOX
+}
+
+void DocWidgetHandler::translatorMenuConnector() {
+    #define SOURCE_LIST TOOLBAR->getTrFrom()
+    #define TARGET_LIST TOOLBAR->getTrTo()
+    #define RELOAD      TOOLBAR->getReload()
+
+    connect(
+        RELOAD, &QAction::triggered, this, &DocWidgetHandler::onReload
+    );
+    connect(
+        SOURCE_LIST, static_cast<void(QComboBox::*)(const QString &)>
             (&QComboBox::currentIndexChanged),
         this, &DocWidgetHandler::onTrFromChanged
     );
-    s = ui->getToolBar()->getTrTo();
     connect(
-        s, static_cast<void(QComboBox::*)(const QString &)>
+        TARGET_LIST, static_cast<void(QComboBox::*)(const QString &)>
             (&QComboBox::currentIndexChanged),
         this, &DocWidgetHandler::onTrToChanged
     );
 
+    #undef SOURCE_LIST
+    #undef TARGET_LIST
+    #undef RELOAD
+}
+
+void DocWidgetHandler::pageNavConnector() {
+    #define FST_PAGE     TOOLBAR->getFstPage()
+    #define PREV_PAGE    TOOLBAR->getPrevPage()
+    #define NEXT_PAGE    TOOLBAR->getNextPage()
+    #define LST_PAGE     TOOLBAR->getLastPage()
+    #define CURRENT_PAGE TOOLBAR->getCurrentPage()
+    #define FIND         TOOLBAR->getFind()
+
     connect(
-        ui->getToolBar()->getZoomIn(), &QAction::triggered,
-        this, &DocWidgetHandler::onZoomIn
+        FST_PAGE, &QAction::triggered, this, &DocWidgetHandler::onFirstPage
     );
     connect(
-        ui->getToolBar()->getZoomOut(), &QAction::triggered,
-        this, &DocWidgetHandler::onZoomOut
+        PREV_PAGE, &QAction::triggered, this, &DocWidgetHandler::onPrevPage
     );
     connect(
-        ui->getToolBar()->getCurrentPage(), &QLineEdit::textEdited,
+        NEXT_PAGE, &QAction::triggered, this, &DocWidgetHandler::onNextPage
+    );
+    connect(
+        LST_PAGE, &QAction::triggered, this, &DocWidgetHandler::onLastPage
+    );
+    connect(
+        FIND, &QAction::triggered, this, &DocWidgetHandler::onFindDialogShow
+    );
+    connect(
+        CURRENT_PAGE, &QLineEdit::textEdited,
         this, &DocWidgetHandler::onChangePage
     );
 
-    connect(
-        ui, &DocWidget::menuConnectSignal,
-        this, &DocWidgetHandler::onContextMenuConnector
-    );
+    #undef FIND
+    #undef CURRENT_PAGE
+    #undef LST_PAGE
+    #undef NEXT_PAGE
+    #undef PREV_PAGE
+    #undef FST_PAGE
+    #undef TOOLBAR
 }
 
-void DocWidgetHandler::connector() {
+void DocWidgetHandler::docHandlerConnector() {
     /* Соединяет сигналы обработчика документа и его слоты */
     connect(
         handler, &DocHandler::pageChange, this, &DocWidgetHandler::onPageChange
@@ -132,45 +174,57 @@ void DocWidgetHandler::connector() {
         &dialog, &FindText::closeDialog,
         this, &DocWidgetHandler::onFindDialogClose
     );
+}
+
+void DocWidgetHandler::contextMenuConnector() {
     connect(
         ui->getFindAction(), &QAction::triggered,
         this, &DocWidgetHandler::onFindDialogShow
     );
-}
-
-
-            /* slots */
-void DocWidgetHandler::onContextMenuConnector(DocContextMenu *menu) {
     connect(
-        menu->getFirstPage(), &QAction::triggered,
+        ui->getFirstPage(), &QAction::triggered,
         this, &DocWidgetHandler::onFirstPage
     );
     connect(
-        menu->getLastPage(), &QAction::triggered,
-        this, &DocWidgetHandler::onLastPage
-    );
-    connect(
-        menu->getNextPage(), &QAction::triggered,
-        this, &DocWidgetHandler::onNextPage
-    );
-    connect(
-        menu->getPrevPage(), &QAction::triggered,
+        ui->getPrevPage(), &QAction::triggered,
         this, &DocWidgetHandler::onPrevPage
     );
     connect(
-        menu->getZoomIn(), &QAction::triggered,
+        ui->getNextPage(), &QAction::triggered,
+        this, &DocWidgetHandler::onNextPage
+    );
+    connect(
+        ui->getLastPage(), &QAction::triggered,
+        this, &DocWidgetHandler::onLastPage
+    );
+    connect(
+        ui->getZoomIn(), &QAction::triggered,
         this, &DocWidgetHandler::onZoomIn
     );
     connect(
-        menu->getZoomOut(), &QAction::triggered,
+        ui->getZoomOut(), &QAction::triggered,
         this, &DocWidgetHandler::onZoomOut
     );
     connect(
-        menu->getFullScreen(), &QAction::triggered,
+        ui->getFullScreen(), &QAction::triggered,
         this, &DocWidgetHandler::onFullScreen
     );
 }
 
+void DocWidgetHandler::toolBarConnectors() {
+    scaleMenuConnector();
+    translatorMenuConnector();
+    pageNavConnector();
+}
+
+void DocWidgetHandler::widgetConnectors() {
+    docHandlerConnector();
+    contextMenuConnector();
+    translatorConnector();
+}
+
+
+            /* slots */
 void DocWidgetHandler::onTOCActivated(const QModelIndex &index) {
     try {
         int indx = handler->getDoc()->getPage(index);
@@ -185,16 +239,20 @@ void DocWidgetHandler::onAbsoluteScaleChanged(const QString& value) {
 }
 
 void DocWidgetHandler::onZoomIn() {
-    #define INDEX ui->getToolBar()->getScaleBox()->currentIndex()
-    if(ui->getToolBar()->getScaleBox()->currentText() == QString("150"))
+    #define INDEX        ui->getToolBar()->getScaleBox()->currentIndex()
+    #define CURRENT_TEXT ui->getToolBar()->getScaleBox()->currentText()
+
+    if(CURRENT_TEXT == QString("150"))
         return;
     ui->getToolBar()->getScaleBox()->setCurrentIndex(INDEX + 1);
 }
 
 void DocWidgetHandler::onZoomOut() {
-    if(ui->getToolBar()->getScaleBox()->currentText() == QString("50"))
+    if(CURRENT_TEXT == QString("50"))
         return;
     ui->getToolBar()->getScaleBox()->setCurrentIndex(INDEX - 1);
+
+    #undef CURRENT_TEXT
     #undef INDEX
 }
 
@@ -239,6 +297,7 @@ void DocWidgetHandler::onDictLangsReady(const QJsonArray result) {
     /* Формирует список пар (исходный язык - целевой) для возможности
      * выбора их пользователем */
     #define AND &&
+    #define SOURCE_LIST ui->getToolBar()->getTrFrom()
 
     QMultiMap<QString, QString> d_langs;
     QList<QVariant> langs = result.toVariantList();
@@ -257,9 +316,10 @@ void DocWidgetHandler::onDictLangsReady(const QJsonArray result) {
             entry++;
         }
     }
-    ui->getToolBar()->getTrFrom()->addItems(dict_langs.keys());
+    SOURCE_LIST->addItems(dict_langs.keys());
 
     #undef AND
+    #undef SOURCE_LIST
 }
 
 void DocWidgetHandler::onPageChange(unsigned int index) {
@@ -281,30 +341,29 @@ void DocWidgetHandler::onChangePage(const QString &page) {
 void DocWidgetHandler::onNextPage() {
     unsigned int i = handler->getCurrentPage();
     if(i == handler->getDoc()->amountPages() - 1) return;
-    onChangePage(QString::number(i + 1));
+    handler->goTo(i + 1);
 }
 
 void DocWidgetHandler::onPrevPage() {
     unsigned int i = handler->getCurrentPage();
     if(i == 0) return;
-    onChangePage(QString::number(i - 1));
+    onChangePage(QString::number(i));
 }
 
 void DocWidgetHandler::onFirstPage() {
-    onChangePage(QString::number(0));
+    if(handler->getDoc()->amountPages() == 1) return;
+    handler->goTo(0);
 }
 
 void DocWidgetHandler::onLastPage() {
-    qDebug() << "lkj";
-    onChangePage(QString::number(handler->getDoc()->amountPages() - 1));
+    if(handler->getDoc()->amountPages() == 1) return;
+    handler->goTo(handler->getDoc()->amountPages() - 1);
 }
 
 void DocWidgetHandler::onFullScreen() {}
 
 
-void DocWidgetHandler::onFindDialogShow() {
-    dialog.show();
-}
+void DocWidgetHandler::onFindDialogShow() { dialog.show(); }
 
 void DocWidgetHandler::onFind(const QString text) {
     vector<pair<QRectF, QString>> results;
@@ -326,4 +385,10 @@ void DocWidgetHandler::onFindDialogClose() {
     ui->getView()->getScene()->eraseHightlights();
 }
 
+
+void DocWidgetHandler::onReload() {
+    if(ui->getToolBar()->getTrFrom()->count() > 0)
+        return;
+    emit getDictLangs();
+}
 /* end slots */

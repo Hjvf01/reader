@@ -14,11 +14,15 @@ MenuBar::MenuBar(QMainWindow* parent) : QMenuBar(parent) {
     for(QAction* act: file_group_actions)
         menu_groups[0]->addAction(act);
             /* view group */
-    for(QAction* act: view_group_actions)
+    for(QAction* act: view_group_actions) {
         menu_groups[1]->addAction(act);
+        act->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    }
             /* tools group */
-    for(QAction* act: tools_group_actions)
+    for(QAction* act: tools_group_actions) {
         menu_groups[2]->addAction(act);
+        act->setCheckable(true);
+    }
             /* help group */
     for(QAction* act: help_group_actions)
         menu_groups[3]->addAction(act);
@@ -35,6 +39,17 @@ MenuBar::MenuBar(QMainWindow* parent) : QMenuBar(parent) {
     for(int i = 0; i < len; i++)
         view_group_actions[i]->setShortcut(view_group_short[i]);
     help_group_actions[0]->setShortcut(help_group_short[0]);
+
+    assert(file_group_actions.size() == file_group_icons.size());
+    assert(view_group_actions.size() == view_group_icons.size());
+
+    len = file_group_actions.size();
+    for(int i = 0; i < len; i++) {
+        file_group_actions[i]->setIcon(file_group_icons[i]);
+    }
+    len = view_group_actions.size();
+    for(int i = 0; i < len; i++)
+        view_group_actions[i]->setIcon(view_group_icons[i]);
 }
 
 
@@ -49,6 +64,11 @@ QAction* MenuBar::getZoomOut()    const { return view_group_actions[1]; }
 QAction* MenuBar::getNextPage()   const { return view_group_actions[2]; }
 QAction* MenuBar::getPrevPage()   const { return view_group_actions[3]; }
 QAction* MenuBar::getFullScreen() const { return view_group_actions[4]; }
+
+QAction* MenuBar::getHightlight()    const { return tools_group_actions[0]; }
+QAction* MenuBar::getUnderlineText() const { return tools_group_actions[1]; }
+QAction* MenuBar::getDashedText()    const { return tools_group_actions[2]; }
+QAction* MenuBar::getTranslator()    const { return tools_group_actions[3]; }
 
 QAction* MenuBar::getHelp()  const { return help_group_actions[0]; }
 QAction* MenuBar::getAbout() const { return help_group_actions[1]; }
