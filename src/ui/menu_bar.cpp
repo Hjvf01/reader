@@ -73,6 +73,44 @@ QAction* MenuBar::getTranslator()    const { return tools_group_actions[3]; }
 QAction* MenuBar::getHelp()  const { return help_group_actions[0]; }
 QAction* MenuBar::getAbout() const { return help_group_actions[1]; }
 
+vector<QAction*> MenuBar::getActions() const {
+    vector<QAction*> res;
+    vector<Actions> all_acts = {
+        file_group_actions,
+        view_group_actions,
+        tools_group_actions,
+        help_group_actions,
+    };
+    for(Actions act_group: all_acts)
+        for(QAction* action: act_group)
+            res.push_back(action);
+
+    return res;
+}
+
+
+vector<QAction*> MenuBar::getFileGroup() const { return file_group_actions; }
+
+const vector<void (QAction::*)(bool)>MenuBar::getFileGroupTriger() const {
+    unsigned int len = file_group_actions.size();
+    vector<void (QAction::*)(bool)> result(len);
+    for(unsigned int i = 0; i < len; i++)
+        result[i] = &QAction::triggered;
+
+    return result;
+}
+
+vector<QAction*> MenuBar::getViewGroup() const { return view_group_actions; }
+
+const vector<void (QAction::*)(bool)>MenuBar::getViewGroupTriger() const {
+    unsigned int len = view_group_actions.size();
+    vector<void (QAction::*)(bool)> result(len);
+
+    for(unsigned int i = 0; i < len; i++) result[i] = &QAction::triggered;
+
+    return result;
+}
+
 
 MenuBar::~MenuBar() {
     for(QMenu* menu: menu_groups) delete menu;

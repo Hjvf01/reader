@@ -7,6 +7,12 @@
 
 MainHandler::MainHandler(MainWindow *window) : QObject() {
     ui = window;
+
+    file_menu.set(ui->getMenu()->getFileGroup(), this);
+    view_menu.set(ui->getMenu()->getViewGroup(), this);
+
+    file_menu.connect(ui->getMenu()->getFileGroupTriger(), file_menu_slots);
+    view_menu.connect(ui->getMenu()->getViewGroupTriger(), view_menu_slots);
 }
 
 MainHandler::~MainHandler() {
@@ -92,6 +98,35 @@ void MainHandler::createDocWidget(QUrl path) {
 }
 
 
+vector<void (MainHandler::*)(void)> MainHandler::getMenuHandlers() {
+    vector<void (MainHandler::*)(void)> res = {
+        &MainHandler::onOpen,
+        &MainHandler::onPrint,
+        &MainHandler::onProperty,
+        &MainHandler::onClose,
+        &MainHandler::onQuit,
+
+        &MainHandler::onZoomIn,
+        &MainHandler::onZoomOut,
+        &MainHandler::onFirstPage,
+        &MainHandler::onPrevPage,
+        &MainHandler::onNextPage,
+        &MainHandler::onPrevPage,
+        &MainHandler::onLastPage,
+        &MainHandler::onFullScreen,
+
+        &MainHandler::onHighlight,
+        &MainHandler::onUnderline,
+        &MainHandler::onDashed,
+        &MainHandler::onTranslator,
+
+        &MainHandler::onHelp,
+        &MainHandler::onAbout
+    };
+    return res;
+}
+
+
                 /* slots */
 void MainHandler::onOpen() {
     ui->statusBarMessage("open");
@@ -124,6 +159,10 @@ void MainHandler::onClose() {
         close(index);
 }
 
+void MainHandler::onQuit() {
+    ui->statusBarMessage("quit");
+}
+
 void MainHandler::onZoomIn() {
     ui->statusBarMessage("zoomint in");
     int index = ui->getCentral()->currentIndex();
@@ -144,6 +183,14 @@ void MainHandler::onZoomOut() {
 
 void MainHandler::onNextPage() {
     ui->statusBarMessage("on next page");
+}
+
+void MainHandler::onLastPage() {
+    ui->statusBarMessage("last page");
+}
+
+void MainHandler::onFirstPage() {
+    ui->statusBarMessage("on first page");
 }
 
 void MainHandler::onPrevPage() {

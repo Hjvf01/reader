@@ -1,6 +1,8 @@
 #ifndef HANDLERS_H
 #define HANDLERS_H
 
+#include <functional>
+using std::function;
 #include <deque>
 using std::deque;
 
@@ -10,6 +12,7 @@ using std::deque;
 #include "../model/models.h"
 #include "../network/network.h"
 #include "../ui/dialogs.h"
+#include "../conectors/connectors.h"
 
 
 class DocHandler : public QObject {
@@ -194,8 +197,43 @@ class MainHandler : public QObject {
     vector<BaseDocument*> documents;
     unsigned int amount = 0;
 
-    TrWorker trnsl;
-    DictWorker dict;
+    Many2One<QAction, MainHandler> file_menu;
+    Many2One<QAction, MainHandler> view_menu;
+    Many2One<QAction, MainHandler> tools_menu;
+    Many2One<QAction, MainHandler> help_menu;
+
+    const vector<void (MainHandler::*)(void)> file_menu_slots = {
+        &MainHandler::onOpen,
+        &MainHandler::onPrint,
+        &MainHandler::onProperty,
+        &MainHandler::onClose,
+        &MainHandler::onQuit
+    };
+
+    const vector<void (MainHandler::*)(void)> view_menu_slots = {
+        &MainHandler::onZoomIn,
+        &MainHandler::onZoomOut,
+        &MainHandler::onFirstPage,
+        &MainHandler::onNextPage,
+        &MainHandler::onPrevPage,
+        &MainHandler::onLastPage,
+        &MainHandler::onFullScreen
+    };
+
+    const vector<void (MainHandler::*)(void)> tools_menu_slots = {
+        &MainHandler::onHighlight,
+        &MainHandler::onUnderline,
+        &MainHandler::onDashed,
+        &MainHandler::onTranslator
+    };
+
+    const vector<void (MainHandler::*)(void)> help_menu_slots = {
+        &MainHandler::onHelp,
+        &MainHandler::onAbout
+    };
+
+    //TrWorker trnsl;
+    //DictWorker dict;
 
 public:
     MainHandler(MainWindow* window);
@@ -203,6 +241,8 @@ public:
 
     void open(QList<QUrl> files);
     void close(int index);
+
+    vector<void (MainHandler::*)(void)> getMenuHandlers(void);
 
 private:
     void createDocWidget(QUrl path);
@@ -212,9 +252,12 @@ public slots:
     void onPrint(void);
     void onProperty(void);
     void onClose(void);
+    void onQuit(void);
 
     void onZoomIn(void);
     void onZoomOut(void);
+    void onFirstPage(void);
+    void onLastPage(void);
     void onNextPage(void);
     void onPrevPage(void);
     void onFullScreen(void);

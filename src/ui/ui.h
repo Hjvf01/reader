@@ -336,6 +336,14 @@ public:
 
     QAction* getHelp(void)  const;
     QAction* getAbout(void) const;
+
+    vector<QAction*> getActions(void) const;
+
+    vector<QAction*> getFileGroup(void) const;
+    const vector<void (QAction::*)(bool)> getFileGroupTriger(void) const;
+
+    vector<QAction*> getViewGroup(void) const;
+    const vector<void (QAction::*)(bool)> getViewGroupTriger(void) const;
 };
 
 

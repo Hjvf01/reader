@@ -1,8 +1,13 @@
+#include <iostream>
+using std::cout;
+using std::endl;
+
 #include <QStyleFactory>
 #include <QApplication>
 #include <QtCore/QUrl>
 
 #include "handlers/handlers.h"
+#include "conectors/connectors.h"
 
 void menuConnector(MainWindow* sender, MainHandler* receiver) {
     MenuBar* m = sender->getMenu();
@@ -91,9 +96,6 @@ int main(int argc, char *argv[]) {
 
     MainWindow main_window;
     MainHandler main_handler(&main_window);
-
-    menuConnector(&main_window, &main_handler);
-    centralConnector(main_window.getCentral(), &main_handler);
 
     int res = app.exec();
     qDebug() << res;
