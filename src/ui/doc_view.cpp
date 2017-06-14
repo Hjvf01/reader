@@ -46,3 +46,12 @@ void DocView::wheelEvent(QWheelEvent *event) {
     else
         emit scrollUp(scroll_step);
 }
+
+
+const vector<void (DocView::*)(int)> DocView::getScrollSignals(void) const {
+    vector<void (DocView::*)(int)> res = {
+        &DocView::scrollUp,
+        &DocView::scrollDown,
+    };
+    return res;
+}

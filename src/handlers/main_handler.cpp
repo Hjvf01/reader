@@ -8,11 +8,7 @@
 MainHandler::MainHandler(MainWindow *window) : QObject() {
     ui = window;
 
-    file_menu.set(ui->getMenu()->getFileGroup(), this);
-    view_menu.set(ui->getMenu()->getViewGroup(), this);
-
-    file_menu.connect(ui->getMenu()->getFileGroupTriger(), file_menu_slots);
-    view_menu.connect(ui->getMenu()->getViewGroupTriger(), view_menu_slots);
+    initConnectors();
 }
 
 MainHandler::~MainHandler() {
@@ -21,6 +17,7 @@ MainHandler::~MainHandler() {
     for(auto d: handlers)     delete d;
     for(auto d: documents)    delete d;
 }
+
 
 void MainHandler::open(QList<QUrl> files) {
     for(QUrl path: files) {
@@ -98,34 +95,68 @@ void MainHandler::createDocWidget(QUrl path) {
 }
 
 
-vector<void (MainHandler::*)(void)> MainHandler::getMenuHandlers() {
-    vector<void (MainHandler::*)(void)> res = {
+const vector<void (MainHandler::*)(void)> MainHandler::fileMenuSlots() const {
+    return {
         &MainHandler::onOpen,
         &MainHandler::onPrint,
         &MainHandler::onProperty,
         &MainHandler::onClose,
         &MainHandler::onQuit,
+    };
+}
 
+const vector<void (MainHandler::*)(void)> MainHandler::viewMenuSlots() const {
+    return {
         &MainHandler::onZoomIn,
         &MainHandler::onZoomOut,
         &MainHandler::onFirstPage,
-        &MainHandler::onPrevPage,
         &MainHandler::onNextPage,
         &MainHandler::onPrevPage,
         &MainHandler::onLastPage,
         &MainHandler::onFullScreen,
+    };
+}
 
+const vector<void (MainHandler::*)(void)> MainHandler::toolMenuSlots() const {
+    return {
         &MainHandler::onHighlight,
         &MainHandler::onUnderline,
         &MainHandler::onDashed,
         &MainHandler::onTranslator,
-
-        &MainHandler::onHelp,
-        &MainHandler::onAbout
     };
-    return res;
 }
 
+const vector<void (MainHandler::*)(void)> MainHandler::helpMenuSlots() const {
+    return {
+        &MainHandler::onHelp,
+        &MainHandler::onAbout,
+    };
+}
+
+const vector<void (MainHandler::*)(int)> MainHandler::centralSlots() const {
+    return {
+        &MainHandler::onTabClicked,
+        &MainHandler::onTabChanged,
+        &MainHandler::onTabClosed,
+    };
+}
+
+void MainHandler::initConnectors() {
+    file_menu.set(ui->getMenu()->getFileGroup(), this);
+    file_menu.connect(ui->getMenu()->getFileGroupSignals(), fileMenuSlots());
+
+    view_menu.set(ui->getMenu()->getViewGroup(), this);
+    view_menu.connect(ui->getMenu()->getViewGroupSignals(), viewMenuSlots());
+
+    tools_menu.set(ui->getMenu()->getToolGroup(), this);
+    tools_menu.connect(ui->getMenu()->getToolGroupSignals(), toolMenuSlots());
+
+    help_menu.set(ui->getMenu()->getHelpGroup(), this);
+    help_menu.connect(ui->getMenu()->getHelpGroupSignals(), helpMenuSlots());
+
+    central.set(ui->getCentral(), this);
+    central.connect(ui->getCentralSignals(), centralSlots());
+}
 
                 /* slots */
 void MainHandler::onOpen() {

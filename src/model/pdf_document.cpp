@@ -16,6 +16,7 @@ PDFDocument::~PDFDocument() {
     delete t_doc_size;
     for(PDFPage* page: t_pages) delete page;
     for(auto p: destinations) delete p->second;
+    for(auto p: destinations) delete p;
 }
 
 void PDFDocument::init(void) {

@@ -33,7 +33,7 @@ SOURCES += main.cpp\
     ui/doc_widget.cpp \
     handlers/doc_widget_handler.cpp \
     model/page.cpp \
-    ui/scroll_bar.cpp
+    ui/scroll_bar.cpp\
 
 HEADERS  += \
     ui/ui.h \

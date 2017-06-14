@@ -41,6 +41,9 @@ class DocHandler : public QObject {
     TrDialog tr_dialog;
     bool dialog_shown = false;
 
+    One2One<DocView, DocHandler>* scrolling_connector;
+    One2One<DocScene, DocHandler>* scene_connector;
+
 public:
     DocHandler(DocView* widget, BaseDocument* doc);
     ~DocHandler();
@@ -72,9 +75,6 @@ public slots:
     void onDialogClose(void);
 
 private:
-    void scrollBarConnector(void);
-    void sceneConnector(void);
-
     void handleNext(int location);
     void handlePrev(int location);
 
@@ -92,15 +92,15 @@ private:
     void eraseBack(Index index);
     void erasePages();
 
+private:
+    void initConnectors(void);
+
 signals:
     void translate(QString text);
     void lookup(QString text);
 
     void pageChange(unsigned int index);
 };
-
-
-void docViewConnector(DocView *sender, DocHandler *receiver);
 
 
 class DocWidgetHandler : public QObject {
@@ -125,6 +125,8 @@ class DocWidgetHandler : public QObject {
     QString to_tr_lang;
     QString from_dict_lang;
     QString to_dict_lang;
+
+    QStandardItemModel* toc;
 
 public:
     DocWidgetHandler(DocWidget* ui, DocHandler* h);
@@ -190,6 +192,14 @@ private slots:
 class MainHandler : public QObject {
     Q_OBJECT
 
+    using VOID_SLOT = void (MainHandler::*)(void);
+    using BOOL_SLOT = void (MainHandler::*)(bool);
+    using INT_SLOT = void (MainHandler::*)(int);
+
+    using VOID_SLOTS = vector<VOID_SLOT>;
+    using INT_SLOTS = vector<INT_SLOT>;
+    using BOOL_SLOTS = vector<BOOL_SLOT>;
+
     MainWindow* ui; // не владеет
     vector<DocWidget*> widgets;
     vector<DocHandler*> doc_handlers;
@@ -202,38 +212,8 @@ class MainHandler : public QObject {
     Many2One<QAction, MainHandler> tools_menu;
     Many2One<QAction, MainHandler> help_menu;
 
-    const vector<void (MainHandler::*)(void)> file_menu_slots = {
-        &MainHandler::onOpen,
-        &MainHandler::onPrint,
-        &MainHandler::onProperty,
-        &MainHandler::onClose,
-        &MainHandler::onQuit
-    };
+    One2One<QTabWidget, MainHandler> central;
 
-    const vector<void (MainHandler::*)(void)> view_menu_slots = {
-        &MainHandler::onZoomIn,
-        &MainHandler::onZoomOut,
-        &MainHandler::onFirstPage,
-        &MainHandler::onNextPage,
-        &MainHandler::onPrevPage,
-        &MainHandler::onLastPage,
-        &MainHandler::onFullScreen
-    };
-
-    const vector<void (MainHandler::*)(void)> tools_menu_slots = {
-        &MainHandler::onHighlight,
-        &MainHandler::onUnderline,
-        &MainHandler::onDashed,
-        &MainHandler::onTranslator
-    };
-
-    const vector<void (MainHandler::*)(void)> help_menu_slots = {
-        &MainHandler::onHelp,
-        &MainHandler::onAbout
-    };
-
-    //TrWorker trnsl;
-    //DictWorker dict;
 
 public:
     MainHandler(MainWindow* window);
@@ -246,6 +226,14 @@ public:
 
 private:
     void createDocWidget(QUrl path);
+
+    void initConnectors(void);
+
+    const VOID_SLOTS fileMenuSlots(void) const;
+    const VOID_SLOTS viewMenuSlots(void) const;
+    const VOID_SLOTS toolMenuSlots(void) const;
+    const VOID_SLOTS helpMenuSlots(void) const;
+    const INT_SLOTS centralSlots(void) const;
 
 public slots:
     void onOpen(void);

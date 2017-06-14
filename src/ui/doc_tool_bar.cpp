@@ -26,12 +26,15 @@ DocToolBar::~DocToolBar() {
 
     delete tr_from;
     delete tr_to;
+
+    delete reload;
 }
 
 void DocToolBar::setPageNums(const QString current, const QString last) {
     current_page.setText(current);
     page_count.setText("\t<html><strong>" + last + "</strong></html>");
-    current_page.setValidator(new QIntValidator(1, last.toInt() - 1));
+    page_validator.setRange(1, last.toInt() - 1);
+    current_page.setValidator(&page_validator);
 }
 
 void DocToolBar::setCurrentPage(const QString num) {

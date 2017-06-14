@@ -14,7 +14,8 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
     widgetConnectors();
     toolBarConnectors();
 
-    table_of_content->setModel(handler->getDoc()->getToc());
+    toc = handler->getDoc()->getToc();
+    table_of_content->setModel(toc);
     ui->setLeftDock(table_of_content);
 
     ui->getToolBar()->setPageNums(
@@ -25,6 +26,7 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
 
 DocWidgetHandler::~DocWidgetHandler() {
     //table_of_content удаляется автоматически
+    delete toc;
 }
 
 

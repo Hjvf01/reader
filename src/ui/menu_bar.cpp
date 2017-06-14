@@ -21,7 +21,6 @@ MenuBar::MenuBar(QMainWindow* parent) : QMenuBar(parent) {
             /* tools group */
     for(QAction* act: tools_group_actions) {
         menu_groups[2]->addAction(act);
-        act->setCheckable(true);
     }
             /* help group */
     for(QAction* act: help_group_actions)
@@ -53,64 +52,38 @@ MenuBar::MenuBar(QMainWindow* parent) : QMenuBar(parent) {
 }
 
 
-QAction* MenuBar::getOpen()     const { return file_group_actions[0]; }
-QAction* MenuBar::getPrint()    const { return file_group_actions[1]; }
-QAction* MenuBar::getProperty() const { return file_group_actions[2]; }
-QAction* MenuBar::getClose()    const { return file_group_actions[3]; }
-QAction* MenuBar::getQuit()     const { return file_group_actions[4]; }
-
-QAction* MenuBar::getZoomIn()     const { return view_group_actions[0]; }
-QAction* MenuBar::getZoomOut()    const { return view_group_actions[1]; }
-QAction* MenuBar::getNextPage()   const { return view_group_actions[2]; }
-QAction* MenuBar::getPrevPage()   const { return view_group_actions[3]; }
-QAction* MenuBar::getFullScreen() const { return view_group_actions[4]; }
-
-QAction* MenuBar::getHightlight()    const { return tools_group_actions[0]; }
-QAction* MenuBar::getUnderlineText() const { return tools_group_actions[1]; }
-QAction* MenuBar::getDashedText()    const { return tools_group_actions[2]; }
-QAction* MenuBar::getTranslator()    const { return tools_group_actions[3]; }
-
-QAction* MenuBar::getHelp()  const { return help_group_actions[0]; }
-QAction* MenuBar::getAbout() const { return help_group_actions[1]; }
-
-vector<QAction*> MenuBar::getActions() const {
-    vector<QAction*> res;
-    vector<Actions> all_acts = {
-        file_group_actions,
-        view_group_actions,
-        tools_group_actions,
-        help_group_actions,
-    };
-    for(Actions act_group: all_acts)
-        for(QAction* action: act_group)
-            res.push_back(action);
-
-    return res;
-}
-
-
 vector<QAction*> MenuBar::getFileGroup() const { return file_group_actions; }
-
-const vector<void (QAction::*)(bool)>MenuBar::getFileGroupTriger() const {
-    unsigned int len = file_group_actions.size();
-    vector<void (QAction::*)(bool)> result(len);
-    for(unsigned int i = 0; i < len; i++)
-        result[i] = &QAction::triggered;
-
-    return result;
-}
-
 vector<QAction*> MenuBar::getViewGroup() const { return view_group_actions; }
+vector<QAction*> MenuBar::getToolGroup() const { return tools_group_actions; }
+vector<QAction*> MenuBar::getHelpGroup() const { return help_group_actions; }
 
-const vector<void (QAction::*)(bool)>MenuBar::getViewGroupTriger() const {
-    unsigned int len = view_group_actions.size();
-    vector<void (QAction::*)(bool)> result(len);
-
-    for(unsigned int i = 0; i < len; i++) result[i] = &QAction::triggered;
-
-    return result;
+const vector<void (QAction::*)(bool)>MenuBar::getFileGroupSignals() const {
+    return vector<void (QAction::*)(bool)>(
+        file_group_actions.size(),
+        &QAction::triggered
+    );
 }
 
+const vector<void (QAction::*)(bool)>MenuBar::getViewGroupSignals() const {
+    return vector<void (QAction::*)(bool)>(
+        view_group_actions.size(),
+        &QAction::triggered
+    );
+}
+
+const vector<void (QAction::*)(bool)>MenuBar::getToolGroupSignals() const {
+    return vector<void (QAction::*)(bool)>(
+        tools_group_actions.size(),
+        &QAction::triggered
+    );
+}
+
+const vector<void (QAction::*)(bool)>MenuBar::getHelpGroupSignals() const {
+    return vector<void (QAction::*)(bool)>(
+        help_group_actions.size(),
+        &QAction::triggered
+    );
+}
 
 MenuBar::~MenuBar() {
     for(QMenu* menu: menu_groups) delete menu;

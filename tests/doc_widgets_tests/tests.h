@@ -39,7 +39,7 @@ public:
         doc_ctrl = new DocHandler(widget->getView(), doc);
         widget_ctrl = new DocWidgetHandler(widget, doc_ctrl);
 
-        widget->show();
+        //widget->show();
     }
 
     virtual ~BaseTest() {

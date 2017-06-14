@@ -25,43 +25,22 @@ DocHandler::DocHandler(DocView* ui, BaseDocument* doc) : QObject() {
     location = 0;
     scale_factor = 1.0;
 
-    scrollBarConnector();
-    sceneConnector();
+    initConnectors();
 
     for(Index i = 0; i < buf_size; i++) assert(pages[i] == nullptr);
     start();
 }
 
-DocHandler::~DocHandler() {/*Этот класс не владеет ни одним указателем*/}
+DocHandler::~DocHandler() {
+    //delete scrolling_connector;
+    //delete scene_connector;
+}
 
 
 unsigned int DocHandler::getCurrentPage() const { return current; }
 int DocHandler::getLocation() const { return location; }
 DocView* DocHandler::getView() const { return ui; }
 BaseDocument* DocHandler::getDoc() const { return document; }
-
-
-void DocHandler::scrollBarConnector() {
-    /*
-        1. Скролинг вверх
-        2. Скролинг вниз
-        3. Изменение состояния скролбара
-    */
-
-    connect(ui, &DocView::scrollUp, this, &DocHandler::onScrollUp);
-    connect(ui, &DocView::scrollDown, this, &DocHandler::onScrollDown);
-    connect(
-        ui->getScroll(), &ScrollBar::actionTriggered,
-        this, &DocHandler::onScrollTriggered
-    );
-}
-
-void DocHandler::sceneConnector() {
-    connect(
-        ui->getScene(), &DocScene::doubleClick,
-        this, &DocHandler::onDoubleClick
-    );
-}
 
 
 void DocHandler::resize(int new_value) {
@@ -277,23 +256,43 @@ void DocHandler::handlePrev(int location) {
 }
 
 
+void DocHandler::initConnectors() {
+    scrolling_connector = new One2One<DocView, DocHandler>(ui, this);
+    const vector<void (DocView::*)(int)> scroll_signals = {
+        &DocView::scrollUp,
+        &DocView::scrollDown,
+    };
+    const vector<void (DocHandler::*)(int)> scroll_slots = {
+        &DocHandler::onScrollUp,
+        &DocHandler::onScrollDown
+    };
+    scrolling_connector->connect(scroll_signals, scroll_slots);
+
+    scene_connector = new One2One<DocScene, DocHandler>(ui->getScene(), this);
+    const vector<void (DocScene::*)(QPointF)> dc_signal = {
+        &DocScene::doubleClick,
+    };
+    const vector<void (DocHandler::*)(QPointF)> dc_slot = {
+        &DocHandler::onDoubleClick,
+    };
+    scene_connector->connect(dc_signal, dc_slot);
+}
+
+
                 PUBLIC_SLOTS_BEGIN
 void DocHandler::onScrollTriggered(int action) {
+    location = ui->getScroll()->value();
     switch(action) {
         case QAbstractSlider::SliderSingleStepAdd:
-            location = ui->getScroll()->value();
             handleNext(location + ui->height());
             return;
         case QAbstractSlider::SliderSingleStepSub:
-            location = ui->getScroll()->value();
             handlePrev(location);
             return;
         case QAbstractSlider::SliderPageStepAdd:
-            location = ui->getScroll()->value();
             handleNext(location + ui->height());
             return;
         case QAbstractSlider::SliderPageStepSub:
-            location = ui->getScroll()->value();
             handlePrev(location);
             return;
         case QAbstractSlider::SliderToMinimum:
@@ -301,19 +300,7 @@ void DocHandler::onScrollTriggered(int action) {
         case QAbstractSlider::SliderToMaximum:
             return;
         case QAbstractSlider::SliderMove: {
-            /* ниче не придумал - поэтому заблокировал*/
             ui->getScroll()->setValue(location);
-            /*
-            int new_location = ui->getScroll()->value();
-            if(new_location > location) {
-                location = new_location;
-                handleNext(location + ui->height());
-                return;
-            } else {
-                location = new_location;
-                handlePrev(location);
-                return;
-            }*/
         } default: /*QAbstractSlider::SliderNoAction = 0*/ return;
     }
 }

@@ -89,6 +89,8 @@ public:
     ScrollBar* getScroll(void) const;
     DocScene* getScene(void) const;
 
+    const vector<void (DocView::*)(int)> getScrollSignals(void) const;
+
 signals:
     void scrollUp(int step);
     void scrollDown(int step);
@@ -127,6 +129,8 @@ class DocToolBar : public QToolBar {
             *next_page,
             *last_page,
             *find;
+
+    QIntValidator page_validator;
 
 public:
     DocToolBar(QWidget* parent=nullptr);
@@ -317,33 +321,17 @@ public:
     MenuBar(QMainWindow* parent);
     ~MenuBar() override;
 
-    QAction* getOpen(void)     const;
-    QAction* getPrint(void)    const;
-    QAction* getProperty(void) const;
-    QAction* getClose(void)    const;
-    QAction* getQuit(void)     const;
-
-    QAction* getZoomIn(void)     const;
-    QAction* getZoomOut(void)    const;
-    QAction* getNextPage(void)   const;
-    QAction* getPrevPage(void)   const;
-    QAction* getFullScreen(void) const;
-
-    QAction* getHightlight(void)    const;
-    QAction* getUnderlineText(void) const;
-    QAction* getDashedText(void)    const;
-    QAction* getTranslator(void)    const;
-
-    QAction* getHelp(void)  const;
-    QAction* getAbout(void) const;
-
-    vector<QAction*> getActions(void) const;
-
     vector<QAction*> getFileGroup(void) const;
-    const vector<void (QAction::*)(bool)> getFileGroupTriger(void) const;
+    const vector<void (QAction::*)(bool)> getFileGroupSignals(void) const;
 
     vector<QAction*> getViewGroup(void) const;
-    const vector<void (QAction::*)(bool)> getViewGroupTriger(void) const;
+    const vector<void (QAction::*)(bool)> getViewGroupSignals(void) const;
+
+    vector<QAction*> getToolGroup(void) const;
+    const vector<void (QAction::*)(bool)> getToolGroupSignals(void) const;
+
+    vector<QAction*> getHelpGroup(void) const;
+    const vector<void (QAction::*)(bool)> getHelpGroupSignals(void) const;
 };
 
 
@@ -360,6 +348,8 @@ public:
 
     QTabWidget* getCentral(void) const;
     MenuBar* getMenu(void) const;
+
+    const vector<void (QTabWidget::*)(int)> getCentralSignals(void) const;
 
     void statusBarMessage(QString msg);
 };

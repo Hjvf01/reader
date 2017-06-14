@@ -18,11 +18,11 @@ int main(int argc, char* argv[]) {
 
     vector<Test> tests = {
         Test(new TestSinglePageDocWidget("/single_page.pdf")),
-        Test(new TestMultPagesDocWidget("/med_doc.pdf")),
+        //Test(new TestMultPagesDocWidget("/med_doc.pdf")),
     };
 
     for(Test test: tests)
         QTest::qExec(test.get(), QStringList());
 
-    return app.exec();
+    return 0; //app.exec();
 }

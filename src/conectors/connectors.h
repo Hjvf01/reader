@@ -12,7 +12,14 @@ using std::vector;
 using Index = unsigned int;
 
 
-template <typename Sender, typename Receiver> class One2One {
+template <typename Sender, typename Receiver> class BaseConnector {
+public:
+    virtual void disconnect(void) const = 0;
+};
+
+
+template <typename Sender, typename Receiver>
+class One2One : public BaseConnector<Sender, Receiver> {
 
     Sender* sender = nullptr;
     Receiver* receiver = nullptr;
@@ -26,13 +33,13 @@ public:
     }
 
     void set(Sender* sender, Receiver* receiver) {
-        if(this->sender != nullptr && this->receiver != nullptr) {
+        if(this->sender == nullptr && this->receiver == nullptr) {
             this->sender = sender;
             this->receiver = receiver;
         }
     }
 
-    void connect(const vector<auto> _signals, const vector<auto> _slots) {
+    void connect(const vector<auto> _signals, const vector<auto> _slots) const {
         assert(_signals.size() == _slots.size());
 
         Index len = _signals.size();
@@ -41,14 +48,19 @@ public:
         }
     }
 
-    ~One2One() {
+    void disconnect(void) const override {
         QObject::disconnect(sender, 0, receiver, 0);
+    }
+
+    ~One2One() {
+        disconnect();
     }
 
 };
 
 
-template <typename Sender, typename Receiver> class One2Many {
+template <typename Sender, typename Receiver>
+class One2Many : public BaseConnector<Sender, Receiver> {
 
     Sender* sender = nullptr;
     vector<Receiver*> receivers;
@@ -63,7 +75,7 @@ public:
     }
 
     void set(Sender* sender, vector<Receiver*> receivers) {
-        if(sender != nullptr && this->receivers.size() != 0) {
+        if(sender == nullptr && this->receivers.size() == 0) {
             this->sender = sender;
             for(Receiver* receiver: receivers)
                 this->receivers.push_back(receivers);
@@ -80,15 +92,20 @@ public:
         }
     }
 
-    ~One2Many() {
+    void disconnect() const override {
         for(Receiver* receiver: receivers)
-            QObject::disconnect(sender, 0, receiver, 0);
+            QObject::disconnect(sender, nullptr, receiver, nullptr);
+    }
+
+    ~One2Many() {
+        disconnect();
     }
 
 };
 
 
-template <typename Sender, typename Receiver> class Many2Many {
+template <typename Sender, typename Receiver>
+class Many2Many : public BaseConnector<Sender, Receiver> {
 
     vector<Sender*> senders;
     vector<Receiver*> receivers;
@@ -108,7 +125,7 @@ public:
     void set(vector<Sender*> senders, vector<Receiver*> receivers) {
         assert(senders.size() == receivers.size());
 
-        if(this->senders.size() != 0 && this->receivers.size() != 0) {
+        if(this->senders.size() == 0 && this->receivers.size() == 0) {
             Index len = senders.size();
             for(Index i = 0; i < len; i++) {
                 this->senders.push_back(senders[i]);
@@ -127,16 +144,21 @@ public:
         }
     }
 
-    ~Many2Many() {
+    void disconnect() const override {
         Index len = senders.size();
         for(Index i = 0; i < len; i++)
-            QObject::disconnect(senders[i], 0, receivers[i], 0);
+            QObject::disconnect(senders[i], nullptr, receivers[i], nullptr);
+    }
+
+    ~Many2Many() {
+        disconnect();
     }
 
 };
 
 
-template <typename Sender, typename Receiver> class Many2One {
+template <typename Sender, typename Receiver>
+class Many2One : public BaseConnector<Sender, Receiver> {
 
     vector<Sender*> senders;
     Receiver* receiver = nullptr;
@@ -166,9 +188,14 @@ public:
             QObject::connect(senders[i], _signals[i], receiver, _slots[i]);
     }
 
-    ~Many2One() {
+    void disconnect() const override {
         for(Sender* sender: senders)
-            QObject::disconnect(sender, 0, receiver, 0);
+            QObject::disconnect(sender, nullptr, receiver, nullptr);
+    }
+
+
+    ~Many2One() {
+        disconnect();
     }
 
 };

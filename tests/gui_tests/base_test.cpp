@@ -7,7 +7,6 @@ BaseTest::BaseTest(QString name) {
     doc = new PDFDocument(path->path(), path->fileName());
     controller = new DocHandler(view, doc);
 
-    docViewConnector(view, controller);
     view->show();
 }
 
