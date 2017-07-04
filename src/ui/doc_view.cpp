@@ -55,3 +55,9 @@ const vector<void (DocView::*)(int)> DocView::getScrollSignals(void) const {
     };
     return res;
 }
+
+const vector<void (ScrollBar::*)(int)> DocView::getScrollBarSignals() const {
+    return {
+        &ScrollBar::actionTriggered
+    };
+}

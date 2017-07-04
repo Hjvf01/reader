@@ -1,6 +1,3 @@
-#define PUBLIC_SLOTS_BEGIN
-#define PUBLIC_SLOTS_END
-
 #include <cassert>
 
 #include <QtWidgets/QAbstractSlider>
@@ -17,13 +14,12 @@ DocHandler::DocHandler(DocView* ui, BaseDocument* doc) : QObject() {
         5. текущее расположени верха виджета относительно начала сцены
         6. Масштаб
     */
-    buf_size = 3;
     this->ui = ui;
     current = 0;
     document = doc;
-    pages = deque<PagePtr>(buf_size);
     location = 0;
     scale_factor = 1.0;
+    pages.resize(buf_size);
 
     initConnectors();
 
@@ -62,29 +58,15 @@ void DocHandler::resize(int new_value) {
     fillBuffer(indexes);
 
     for(PagePtr page: pages)
-        if(page != nullptr && page->index == current)
-            ui->centerOn(page->page);
-}
-
-
-bool DocHandler::pointBeyondScene(float x, float y) {
-    #define OR ||
-
-    return (
-        (x > ui->getScene()->sceneRect().width()) OR
-        (y > ui->getScene()->sceneRect().height()) OR
-        (x < 0) OR
-        (y < 0)
-    );
-
-    #undef OR
+        if(page != nullptr && page->getIndex() == current)
+            ui->centerOn(page);
 }
 
 void DocHandler::eraseFront(Index index) {
     PagePtr deleted = pages[0];
     if(deleted != nullptr) {
         document->page(index - buf_size)->cancelDrawn();
-        ui->getScene()->removeItem(deleted->page);
+        ui->getScene()->removeItem(deleted);
     }
     pages.pop_front();
     delete deleted;
@@ -94,7 +76,7 @@ void DocHandler::eraseBack(Index index) {
     PagePtr deleted = pages[pages.size() - 1];
     if(deleted != nullptr) {
         document->page(index + buf_size)->cancelDrawn();
-        ui->getScene()->removeItem(deleted->page);
+        ui->getScene()->removeItem(deleted);
     }
     pages.pop_back();
     delete deleted;
@@ -108,13 +90,10 @@ void DocHandler::drawNext(unsigned int index) {
         3. Если буффер содержащий страницы заполнен, то
            удалить страницу с представления, удалить графический елемент
     */
-    PagePixPtr page_pix = new QGraphicsPixmapItem(
-        document->page(index)->render()
-    );
-    PagePtr page = new Page(index, page_pix);
+    PagePtr page = new PageView(document->page(index)->render(), index);
 
-    page_pix->setOffset(document->page(index)->offset());
-    ui->getScene()->addItem(page_pix);
+    page->setOffset(document->page(index)->offset());
+    ui->getScene()->addItem(page);
     pages.push_back(page);
 
     assert(pages.size() == buf_size + 1);
@@ -128,13 +107,10 @@ void DocHandler::drawPrev(unsigned int index) {
         Этот метод аналогичен предыдущему. Добавляет страницу не в конец
         а в начало буффера и соотвественно удаляет с конца а не с начала
     */
-    PagePixPtr page_pix = new QGraphicsPixmapItem(
-        document->page(index)->render()
-    );
-    PagePtr page = new Page(index, page_pix);
+    PagePtr page = new PageView(document->page(index)->render(), index);
 
-    page_pix->setOffset(document->page(index)->offset());
-    ui->getScene()->addItem(page_pix);
+    page->setOffset(document->page(index)->offset());
+    ui->getScene()->addItem(page);
     pages.push_front(page);
 
     assert(pages.size() == buf_size + 1);
@@ -167,14 +143,12 @@ void DocHandler::start() {
 
     drawFirst();
     ui->centerOn(0, 0);
-    connect(
-        &tr_dialog, &TrDialog::closeDialog, this, &DocHandler::onDialogClose
-    );
 }
 
 
-void DocHandler::fillBuffer(vector<Index> indexes) {
-    for(Index i: indexes) drawNext(i);
+void DocHandler::fillBuffer(const vector<Index>& indexes) {
+    for(Index i: indexes)
+        drawNext(i);
 }
 
 
@@ -182,28 +156,28 @@ vector<unsigned int> DocHandler::getIndexes() {
     vector<Index> res;
     for(PagePtr page: pages)
         if(page != nullptr)
-            res.push_back(page->index);
+            res.push_back(page->getIndex());
     return res;
 }
 
 
 void DocHandler::erasePages() {
     /* Полностью стирает страницы */
-    for(Page* page: pages) {
+    for(PagePtr page: pages) {
         if(page != nullptr)
-            ui->getScene()->removeItem(page->page);
+            ui->getScene()->removeItem(page);
         delete page;
     }
     pages.clear();
     Index len = document->amountPages();
-    for(register Index i = 0; i < len; i++)
+    for(Index i = 0; i < len; i++)
         document->page(i)->cancelDrawn();
 
     assert(pages.size() == 0);
     for(Index i = 0; i < len; i++)
         assert(document->page(i)->isDrawn() == false);
 
-    pages = deque<Page*>(buf_size);
+    pages.resize(buf_size);
 }
 
 
@@ -212,7 +186,7 @@ void DocHandler::goTo(unsigned int index) {
     emit pageChange(current);
 
     if(document->amountPages() < buf_size) {
-        ui->centerOn(pages[current]->page);
+        ui->centerOn(pages[current]);
         return;
     }
 
@@ -228,9 +202,9 @@ void DocHandler::goTo(unsigned int index) {
         for(Index i = last - buf_size; i < len; i++)
             drawNext(i);
 
-    for(auto page: pages)
-       if(page->index == current)
-           ui->centerOn(page->page);
+    for(PagePtr page: pages)
+       if(page->getIndex() == current)
+           ui->centerOn(page);
 }
 
 void DocHandler::handleNext(int location) {
@@ -258,28 +232,32 @@ void DocHandler::handlePrev(int location) {
 
 void DocHandler::initConnectors() {
     scrolling_connector = new One2One<DocView, DocHandler>(ui, this);
-    const vector<void (DocView::*)(int)> scroll_signals = {
-        &DocView::scrollUp,
-        &DocView::scrollDown,
-    };
-    const vector<void (DocHandler::*)(int)> scroll_slots = {
+    scrolling_connector->connect(
+        ui->getScrollSignals(), getScrollHandlers()
+    );
+
+    scroll_bar_connector = new One2One<ScrollBar, DocHandler>(
+        ui->getScroll(),
+        this
+    );
+    scroll_bar_connector->connect(
+        ui->getScrollBarSignals(), getScrollBarHandler()
+    );
+}
+
+const vector<void (DocHandler::*)(int)> DocHandler::getScrollHandlers() const {
+    return {
         &DocHandler::onScrollUp,
         &DocHandler::onScrollDown
     };
-    scrolling_connector->connect(scroll_signals, scroll_slots);
+}
 
-    scene_connector = new One2One<DocScene, DocHandler>(ui->getScene(), this);
-    const vector<void (DocScene::*)(QPointF)> dc_signal = {
-        &DocScene::doubleClick,
-    };
-    const vector<void (DocHandler::*)(QPointF)> dc_slot = {
-        &DocHandler::onDoubleClick,
-    };
-    scene_connector->connect(dc_signal, dc_slot);
+const vector<void (DocHandler::*)(int)> DocHandler::getScrollBarHandler() const {
+    return { &DocHandler::onScrollTriggered };
 }
 
 
-                PUBLIC_SLOTS_BEGIN
+
 void DocHandler::onScrollTriggered(int action) {
     location = ui->getScroll()->value();
     switch(action) {
@@ -331,54 +309,9 @@ void DocHandler::onScrollUp(int step) {
 }
 
 
-void DocHandler::onDoubleClick(QPointF point) {
-    /*
-        Обрабатывает двойной клик на сцене
-        Если он пришелся на слово то автоматически переводит его
-    */
-    if(pointBeyondScene(point.x(), point.y()))
-        return;
-    for(Page* page_elem: pages)
-        if(page_elem != nullptr && page_elem->page->contains(point)) {
-            pair<QRectF, QString> elem =
-                document->page(page_elem->index)->getTextBox(point);
-            if(elem.first.width() == 0 && elem.first.height() == 0)
-                return;
-            ui->getScene()->setHightLight(elem.first);
-            emit translate(elem.second);
-            emit lookup(elem.second);
-            tr_dialog.setWindowTitle(elem.second);
-
-            return;
-    }
+const vector<void (DocHandler::*)(unsigned int)>
+DocHandler::getPageChSignal() const {
+    return {
+        &DocHandler::pageChange,
+    };
 }
-
-
-void DocHandler::onError(QString error_msg) { qDebug() << error_msg; }
-
-
-void DocHandler::onTranslateReady(const QJsonObject result) {
-    /* принимает результаты перевода и отбражает их в диалогов окне */
-    tr_dialog.setTranslate(result);
-    if(dialog_shown == false) tr_dialog.show();
-    dialog_shown = true;
-}
-
-
-void DocHandler::onLookupReady(const QJsonObject result) {
-    /* аналогично, но результаты поиска в словаре */
-    tr_dialog.setLookup(result);
-    if(dialog_shown == false) tr_dialog.show();
-    dialog_shown = true;
-}
-
-
-void DocHandler::onDialogClose() {
-    dialog_shown = false;
-    ui->getScene()->eraseHightlight();
-}
-            PUBLIC_SLOTS_END
-
-
-#undef PUBLIC_SLOTS_BEGIN
-#undef PUBLIC_SLOTS_END

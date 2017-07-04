@@ -3,7 +3,7 @@ QT       += core gui widgets xml network
 TARGET = e_reader
 TEMPLATE = app
 
-CONFIG += c++14
+CONFIG += c++1z
 
 INCLUDEPATH  += /usr/include/poppler/qt5
 LIBS         += -L/usr/lib -lpoppler-qt5
@@ -33,7 +33,9 @@ SOURCES += main.cpp\
     ui/doc_widget.cpp \
     handlers/doc_widget_handler.cpp \
     model/page.cpp \
-    ui/scroll_bar.cpp\
+    ui/scroll_bar.cpp \
+    ui/page_view.cpp \
+    handlers/scene_handler.cpp
 
 HEADERS  += \
     ui/ui.h \
@@ -41,6 +43,6 @@ HEADERS  += \
     model/models.h \
     ui/dialogs.h \
     network/network.h \
-    conectors/connectors.h
+    connectors/connectors.h
 
 RESOURCES = reader.qrc

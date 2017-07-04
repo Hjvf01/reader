@@ -1,7 +1,7 @@
 #include "tests.h"
 
 
-BaseTest::BaseTest(QString name) {
+BaseTest::BaseTest(const QString& name) {
     path = new QUrl(base + name);
     view = new DocView;
     doc = new PDFDocument(path->path(), path->fileName());
@@ -12,7 +12,7 @@ BaseTest::BaseTest(QString name) {
 
 
 void BaseTest::compareRect() {
-    cout << "\t\t\t" << doc->name().toStdString() << endl;
+    cout << "\t\t\t" << doc->getName().toStdString() << endl;
     QRectF doc_rect(0, 0,
         doc->size()->width(), doc->size()->height());
     QVERIFY(view->sceneRect() == view->getScene()->sceneRect());

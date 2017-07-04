@@ -46,7 +46,8 @@ void DocScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void DocScene::eraseHightlight() {
-    removeItem(select_box);
+    if(select_box != nullptr)
+        removeItem(select_box);
 }
 
 void DocScene::eraseHightlights() {
@@ -58,4 +59,12 @@ void DocScene::eraseHightlights() {
     select_boxes.clear();
 
     assert(select_boxes.size() == 0);
+}
+
+
+const vector<void (DocScene::*)(const QPointF&)> DocScene::getSceneSignals()
+        const {
+    return {
+        &DocScene::doubleClick,
+    };
 }

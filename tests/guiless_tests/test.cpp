@@ -36,7 +36,7 @@ void PDFDocumentTest::test() {
 
     for(BaseDocument* doc: docs) {
         Index size = doc->amountPages() > 10 ? 10 : doc->amountPages();
-        cout << "\t\t\t" << doc->name().toStdString() << endl;
+        cout << "\t\t\t" << doc->getName().toStdString() << endl;
         for(Index i = 0; i < size; i++) {
             QPixmap page_pix = doc->page(i)->render();
             qDebug() << page_pix.size() << "\t"
@@ -50,20 +50,20 @@ void PDFDocumentTest::test() {
 
 void PDFDocumentTest::testPath() {
     for(int i = 0; i < length; i++)
-        QVERIFY(docs[i]->path() == paths[i].path());
+        QVERIFY(docs[i]->getPath() == paths[i].path());
 }
 
 void PDFDocumentTest::testName() {
     for(int i = 0; i < length; i++)
-        QVERIFY(docs[i]->name() == paths[i].fileName());
+        QVERIFY(docs[i]->getName() == paths[i].fileName());
 }
 
 void PDFDocumentTest::testAmountPages() {
     for(int i = 0; i < length; i++)
-        QVERIFY(docs[i]->pages().size() == docs[i]->amountPages());
+        QVERIFY(docs[i]->getPages().size() == docs[i]->amountPages());
 }
 
-void PDFDocumentTest::testResizing() {
+void PDFDocumentTest::testResizing() {/*
     cout << "\t\t\t***101***" << endl;
     test();
 
@@ -73,7 +73,7 @@ void PDFDocumentTest::testResizing() {
 }
 
 void PDFDocumentTest::testBuild() {
-    //for(BaseDocument* doc: docs) doc->setDpi(150.0, 150.0);
+    //for(BaseDocument* doc: docs) doc->setDpi(150.0, 150.0);*/
 }
 
 
@@ -90,7 +90,7 @@ void PDFDocumentTest::testSizes() {
         QVERIFY(len == doc->amountPages());
     }
     for(auto doc: docs) {
-        qDebug() << doc->name();
+        qDebug() << doc->getName();
         qDebug() << *(doc->size());
     }
 }

@@ -2,108 +2,114 @@
 
 
 PDFDocument::PDFDocument(QString p, QString n) : BaseDocument(p, n) {
-    t_current = 0;
-    t_dpix = 0.0;
-    t_dpiy = 0.0;
-    t_margin = 6;
-    t_doc_size = new QSize(0, 0);
-    t_toc = nullptr;
+    current = 0;
+    dpix = 0.0;
+    dpiy = 0.0;
+    margin = 6;
+    doc_size = new QSize(0, 0);
+    toc_model = new QStandardItemModel;
 }
 
 PDFDocument::~PDFDocument() {
-    delete t_document;
-    delete t_toc;
-    delete t_doc_size;
-    for(PDFPage* page: t_pages) delete page;
+    delete document;
+    delete doc_size;
+    delete toc_model;
+
+    for(PDFPage* page: pages) delete page;
     for(auto p: destinations) delete p->second;
     for(auto p: destinations) delete p;
 }
 
 void PDFDocument::init(void) {
-    if(t_dpix == 0 && t_dpiy == 0) throw "DPIDidntInit";
+    if(dpix == 0 && dpiy == 0)
+        throw "DPIDidntInit";
 
-    t_document = Poppler::Document::load(path());
-    if(t_document == nullptr) throw "DocumentDidntOpen";
-    for(RenderHint hint: render_hints) t_document->setRenderHint(hint);
+    document = Poppler::Document::load(path);
+    if(document == nullptr)
+        throw "DocumentDidntOpen";
+
+    for(RenderHint hint: render_hints)
+        document->setRenderHint(hint);
     build();
-    t_toc = t_document->toc();
 }
 
-void PDFDocument::setDpi(double dpix, double dpiy) {
+void PDFDocument::setDpi(double dx, double dy) {
     /* Устанавливает значения DPI при инициализации или масштабировании */
-    if(t_dpix == 0.0 && t_dpiy == 0.0) {
-        t_dpix = dpix;
-        t_dpiy = dpiy;
+    if(dpix == 0.0 && dpiy == 0.0) {
+        dpix = dx;
+        dpiy = dy;
     } else {
-        t_dpix = dpix;
-        t_dpiy = dpiy;
-        t_doc_size->setHeight(0);
-        t_doc_size->setWidth(0);
+        dpix = dx;
+        dpiy = dy;
+        doc_size->setHeight(0);
+        doc_size->setWidth(0);
         rebuild();
    }
 }
 
 void PDFDocument::rebuild() {
     /* Пересчитывает размеры страниц при масштабировании */
-    for(auto page: t_pages) delete page;
-    t_pages.clear();
+    for(auto page: pages)
+        delete page;
+
+    pages.clear();
     build();
 }
 
 void PDFDocument::build() {
-    /*
-        Строит список страниц документа
-    */
-    int len = t_document->numPages();
+    /* Строит список страниц документа */
+    int len = document->numPages();
     int offset_x = 0;
     int offset_y = 0;
     for(int i = 0; i < len; i++) {
-        t_pages.push_back(new PDFPage(
-            t_document->page(i), offset_x, offset_y, t_dpix, t_dpiy
+        pages.push_back(new PDFPage(
+            document->page(i), offset_x, offset_y, dpix, dpiy
         ));
-        int actual_height = t_pages[i]->actualHeight();
-        int actual_width = t_pages[i]->actualWidth();
-        t_doc_size->setHeight(
-            (t_doc_size->height() + actual_height) + t_margin);
-        if(actual_width > t_doc_size->width())
-            t_doc_size->setWidth(actual_width);
-        offset_x = 0; offset_y = t_doc_size->height();
+        int actual_height = pages[i]->actualHeight();
+        int actual_width = pages[i]->actualWidth();
+        doc_size->setHeight(
+            (doc_size->height() + actual_height) + margin);
+        if(actual_width > doc_size->width())
+            doc_size->setWidth(actual_width);
+        offset_x = 0; offset_y = doc_size->height();
     }
 }
 
-int PDFDocument::length() const { return t_doc_size->height(); }
-int PDFDocument::width() const { return t_doc_size->width(); }
-QSize* PDFDocument::size() const { return t_doc_size; }
-vector<PDFPage*> PDFDocument::pages() const { return t_pages; }
-double PDFDocument::scaleFactorX() { return t_dpix / DEFAULT_DPI; }
-double PDFDocument::scaleFactorY() { return t_dpiy / DEFAULT_DPI; }
+int PDFDocument::length() const { return doc_size->height(); }
+int PDFDocument::width() const { return doc_size->width(); }
+QSize* PDFDocument::size() const { return doc_size; }
+vector<PDFPage*> PDFDocument::getPages() const { return pages; }
+double PDFDocument::scaleFactorX() { return dpix / DEFAULT_DPI; }
+double PDFDocument::scaleFactorY() { return dpiy / DEFAULT_DPI; }
 
 PDFPage* PDFDocument::page(unsigned int index) const {
-    if(index > t_pages.size()) throw "IndexOutOfRange";
-    return t_pages[index];
+    if(index > pages.size()) throw "IndexOutOfRange";
+    return pages[index];
 }
 
 unsigned int PDFDocument::amountPages() const {
-    return t_document->numPages();
+    return document->numPages();
 }
 
 QString PDFDocument::metaInfo() const {
     /* Вернет информацию о документе */
     QString out = "";
-    QStringList keys = t_document->infoKeys();
-    for(QString key: keys) out += key + ":\t" + t_document->info(key) + "\n";
+    QStringList keys = document->infoKeys();
+    for(QString key: keys)
+        out += key + ":\t" + document->info(key) + "\n";
+
     return out;
 }
 
 QStandardItemModel* PDFDocument::getToc() {
-    QStandardItemModel* model = new QStandardItemModel;
-    model->setHorizontalHeaderLabels(QStringList(name()));
-    if(t_toc != nullptr) {
-        QStandardItem* model_root = model->invisibleRootItem();
-        QDomNode root = t_toc->firstChild();
+    toc_model->setHorizontalHeaderLabels(QStringList(name));
+    QDomDocument* doc_toc = document->toc();
+    if(doc_toc != nullptr) {
+        QStandardItem* model_root = toc_model->invisibleRootItem();
+        QDomNode root = doc_toc->firstChild();
         make_model(root, model_root);
     }
-    return model;
+    return toc_model;
 }
 
 
@@ -126,7 +132,7 @@ void PDFDocument::make_model(QDomNode root, QStandardItem* model) {
         else
             destinations.push_back(new TOCPair(
                 new_item,
-                t_document->linkDestination(
+                document->linkDestination(
                     elem.attributeNode("DestinationName").value()
                 )
             ));

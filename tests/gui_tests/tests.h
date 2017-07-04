@@ -5,8 +5,6 @@ using std::cout;
 using std::endl;
 #include <vector>
 using std::vector;
-#include <memory>
-using std::shared_ptr;
 
 #include <QtTest/QtTest>
 
@@ -28,6 +26,9 @@ using std::shared_ptr;
 #include "../../src/handlers/handlers.h"
 
 
+static const QString base = "/home/roma/ws/C/scrs/e_reader/tests_src/samples";
+
+
 class BaseTest : public QObject {
     Q_OBJECT
 
@@ -36,7 +37,6 @@ protected:
     using TextPtr = shared_ptr<Text>;
     using TextList = QList<TextPtr>;
 
-    const QString base = "/home/roma/ws/C/scrs/e_reader/tests/samples";
     DocView* view;
     BaseDocument* doc;
     DocHandler* controller;
@@ -47,7 +47,7 @@ protected:
     double getCurrentLocation(int loc);
 
 public:
-    BaseTest(QString name);
+    BaseTest(const QString& name);
     virtual ~BaseTest();
 };
 
@@ -56,7 +56,7 @@ class SinglePageViewTest : public BaseTest {
     Q_OBJECT
 
 public:
-    explicit SinglePageViewTest(QString name);
+    explicit SinglePageViewTest(const QString& name);
     ~SinglePageViewTest() override;
 
 private slots:
@@ -73,7 +73,7 @@ class MultPageViewTest : public BaseTest {
     Q_OBJECT
 
 public:
-    MultPageViewTest(QString name);
+    MultPageViewTest(const QString& name);
     ~MultPageViewTest() override;
 
 private slots:
@@ -81,4 +81,23 @@ private slots:
     void testScrollingDown(void);
     void testTextBoxes(void);
     void testSearch(void);
+};
+
+
+class SceneTest : public QObject {
+    Q_OBJECT
+
+    SceneHandler* controller;
+    BaseDocument* doc;
+    DocScene* scene;
+    QGraphicsView view;
+
+    One2One<DocScene, SceneHandler>* connector;
+
+public:
+    SceneTest();
+    ~SceneTest() override;
+
+private slots:
+    void testDbClick(void);
 };

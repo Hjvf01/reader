@@ -1,59 +1,80 @@
 #ifndef HANDLERS_H
 #define HANDLERS_H
 
-#include <functional>
-using std::function;
+#include <memory>
+using std::shared_ptr;
+using std::make_shared;
 #include <deque>
 using std::deque;
-
-#include <QtWidgets/QGraphicsPixmapItem>
 
 #include "../ui/ui.h"
 #include "../model/models.h"
 #include "../network/network.h"
 #include "../ui/dialogs.h"
-#include "../conectors/connectors.h"
+#include "../connectors/connectors.h"
+
+
+class SceneHandler : public QObject {
+    Q_OBJECT
+
+    DocScene* scene;
+    BaseDocument* document;
+    TrDialog dialog;
+    bool dialog_shown;
+
+    One2One<DocScene, SceneHandler> connector;
+
+public:
+    SceneHandler(DocScene* scene, BaseDocument* doc);
+    ~SceneHandler() override;
+
+    void setScene(DocScene* scene);
+    void setDoc(BaseDocument* doc);
+    DocScene* getScene(void) const;
+
+signals:
+    void translate(const QString&);
+    void lookup(const QString&);
+
+public slots:
+    void onDoubleClick(const QPointF& point);
+    void onError(const QString& error_msg);
+    void onTranslateReady(const QJsonObject& result);
+    void onLookupReady(const QJsonObject& result);
+
+private:
+    bool pointBeyondScene(const QPointF& point);
+    void initConnectors(void);
+    const vector<void (SceneHandler::*)(const QPointF&)>handlers(void) const;
+};
 
 
 class DocHandler : public QObject {
     Q_OBJECT
 
     using Index = unsigned int;
-    using PagePixPtr = QGraphicsPixmapItem*;
+    using PagePtr = PageView*;
 
-    struct Page {
-        Index index;
-        PagePixPtr page;
-
-        Page(Index i, PagePixPtr p) : index(i), page(p) {}
-        ~Page() { delete page; }
-    };
-
-    using PagePtr = Page*;
-
-    Index buf_size = 3;
+    static const Index buf_size = 3;
     DocView* ui;
     Index current;
     deque<PagePtr> pages;
     BaseDocument* document;
     int location;
     double scale_factor;
-    TrDialog tr_dialog;
-    bool dialog_shown = false;
 
     One2One<DocView, DocHandler>* scrolling_connector;
-    One2One<DocScene, DocHandler>* scene_connector;
+    One2One<ScrollBar, DocHandler>* scroll_bar_connector;
 
 public:
     DocHandler(DocView* widget, BaseDocument* doc);
-    ~DocHandler();
+    ~DocHandler() override;
 
     unsigned int getCurrentPage(void) const;
     int getLocation(void) const;
 
     DocView* getView(void) const;
     BaseDocument* getDoc(void) const;
-    deque<Page*> getPages() const { return pages; }
 
     void resize(int new_value);
 
@@ -61,18 +82,12 @@ public:
 
     void goTo(unsigned int index);
 
-public slots:
-    void onDoubleClick(QPointF point);
+    const vector<void (DocHandler::*)(unsigned int)> getPageChSignal(void) const;
 
+public slots:
     void onScrollUp(int step);
     void onScrollDown(int step);
     void onScrollTriggered(int action);
-
-    void onError(QString error_msg);
-    void onTranslateReady(const QJsonObject result);
-    void onLookupReady(const QJsonObject result);
-
-    void onDialogClose(void);
 
 private:
     void handleNext(int location);
@@ -84,9 +99,7 @@ private:
 
     void start(void);
 
-    void fillBuffer(vector<Index> indexes);
-
-    bool pointBeyondScene(float x, float y);
+    void fillBuffer(const vector<Index>& indexes);
 
     void eraseFront(Index index);
     void eraseBack(Index index);
@@ -95,10 +108,10 @@ private:
 private:
     void initConnectors(void);
 
-signals:
-    void translate(QString text);
-    void lookup(QString text);
+    const vector<void (DocHandler::*)(int)> getScrollHandlers(void) const;
+    const vector<void (DocHandler::*)(int)> getScrollBarHandler(void) const;
 
+signals:
     void pageChange(unsigned int index);
 };
 
@@ -148,8 +161,8 @@ private:
     void widgetConnectors(void);
 
 signals:
-    void translate(const QString text, Parametrs parametrs);
-    void lookup(const QString text, Parametrs parametrs);
+    void translate(const QString& text, const Parametrs& parametrs);
+    void lookup(const QString& text, const Parametrs& parametrs);
 
     void getTrLangs(void);
     void getDictLangs(void);
@@ -163,29 +176,29 @@ public slots:
     void onTrFromChanged(const QString& lang_name);
     void onTrToChanged(const QString& lang_name);
 
-    void onTranslate(const QString text);
-    void onLookup(const QString text);
+    void onTranslate(const QString& text);
+    void onLookup(const QString& text);
 
-    void onDictLangsReady(const QJsonArray langs);
-    void onError(QString error_msg);
+    void onDictLangsReady(const QJsonArray& langs);
+    void onError(const QString& error_msg);
 
     void onPageChange(unsigned int index);
 
     void onTOCActivated(const QModelIndex& index);
     void onChangePage(const QString& page);
 
-    void onNextPage();
-    void onPrevPage();
-    void onLastPage();
-    void onFirstPage();
-    void onFullScreen();
+    void onNextPage(bool);
+    void onPrevPage(bool);
+    void onLastPage(bool);
+    void onFirstPage(bool);
+    void onFullScreen(bool);
 
-    void onFind(const QString text);
+    void onFind(const QString& text);
     void onFindDialogShow(void);
     void onFindDialogClose(void);
 
 private slots:
-    void onReload(void);
+    void onReload(bool);
 };
 
 
@@ -229,34 +242,34 @@ private:
 
     void initConnectors(void);
 
-    const VOID_SLOTS fileMenuSlots(void) const;
-    const VOID_SLOTS viewMenuSlots(void) const;
-    const VOID_SLOTS toolMenuSlots(void) const;
-    const VOID_SLOTS helpMenuSlots(void) const;
+    const BOOL_SLOTS fileMenuSlots(void) const;
+    const BOOL_SLOTS viewMenuSlots(void) const;
+    const BOOL_SLOTS toolMenuSlots(void) const;
+    const BOOL_SLOTS helpMenuSlots(void) const;
     const INT_SLOTS centralSlots(void) const;
 
 public slots:
-    void onOpen(void);
-    void onPrint(void);
-    void onProperty(void);
-    void onClose(void);
-    void onQuit(void);
+    void onOpen(bool);
+    void onPrint(bool);
+    void onProperty(bool);
+    void onClose(bool);
+    void onQuit(bool);
 
-    void onZoomIn(void);
-    void onZoomOut(void);
-    void onFirstPage(void);
-    void onLastPage(void);
-    void onNextPage(void);
-    void onPrevPage(void);
-    void onFullScreen(void);
+    void onZoomIn(bool);
+    void onZoomOut(bool);
+    void onFirstPage(bool);
+    void onLastPage(bool);
+    void onNextPage(bool);
+    void onPrevPage(bool);
+    void onFullScreen(bool);
 
-    void onHighlight(void);
-    void onUnderline(void);
-    void onDashed(void);
-    void onTranslator(void);
+    void onHighlight(bool);
+    void onUnderline(bool);
+    void onDashed(bool);
+    void onTranslator(bool);
 
-    void onHelp(void);
-    void onAbout(void);
+    void onHelp(bool);
+    void onAbout(bool);
 
     void onTabClicked(int);
     void onTabChanged(int);

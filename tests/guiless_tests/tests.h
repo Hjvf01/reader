@@ -39,7 +39,6 @@ private slots:
      void testName(void);
      void testAmountPages(void);
      void testResizing(void);
-     void testBuild(void);
      void testSizes(void);
 };
 

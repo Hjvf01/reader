@@ -24,7 +24,7 @@ class BaseTest : public QObject {
 protected:
     using Index = unsigned int;
 
-    const QString base = "/home/roma/ws/C/scrs/e_reader/tests/samples";
+    const QString base = "/home/roma/ws/C/scrs/e_reader/tests_src/samples";
     QUrl* path;
     DocWidget* widget;
     BaseDocument* doc;
@@ -39,7 +39,7 @@ public:
         doc_ctrl = new DocHandler(widget->getView(), doc);
         widget_ctrl = new DocWidgetHandler(widget, doc_ctrl);
 
-        //widget->show();
+        widget->show();
     }
 
     virtual ~BaseTest() {

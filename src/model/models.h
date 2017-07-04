@@ -90,8 +90,8 @@ public:
     ~BaseDocument() = default;
     BaseDocument(QString p, QString n);
 
-    QString name(void) const;
-    QString path(void) const;
+    QString getName(void) const;
+    QString getPath(void) const;
 
     virtual void init(void) = 0;
     virtual void setDpi(double dpix, double dpiy) = 0;
@@ -101,7 +101,7 @@ public:
     virtual int width(void) const = 0;
     virtual QSize* size(void) const = 0;
     virtual unsigned int amountPages(void) const = 0;
-    virtual vector<PDFPage*> pages() const = 0;
+    virtual vector<PDFPage*> getPages() const = 0;
     virtual PDFPage* page(unsigned int index) const = 0;
     virtual double scaleFactorX() = 0;
     virtual double scaleFactorY() = 0;
@@ -113,11 +113,8 @@ public:
     virtual bool operator !=(BaseDocument* other);
 
 protected:
-    virtual void rebuild(void) = 0;
-    virtual void build(void) = 0;
-
-    QString t_path;
-    QString t_name;
+    QString path;
+    QString name;
 };
 
 
@@ -129,14 +126,15 @@ class PDFDocument : public BaseDocument {
     using TOCLink = Poppler::LinkDestination;
     using TOCPair = pair<QStandardItem*, TOCLink*>;
 
-    Poppler::Document* t_document;
-    int t_current;
-    vector<PDFPage*> t_pages;
-    double t_dpix;
-    double t_dpiy;
-    QDomDocument* t_toc;
-    int t_margin;
-    QSize* t_doc_size;
+    Poppler::Document* document;
+    int current;
+    vector<PDFPage*> pages;
+    double dpix;
+    double dpiy;
+    int margin;
+    QSize* doc_size;
+    QStandardItemModel* toc_model;
+
     const RenderHints render_hints = {
         RenderHint::Antialiasing,
         RenderHint::TextAntialiasing,
@@ -157,7 +155,7 @@ public:
     int width() const override;
     QSize* size() const override;
     unsigned int amountPages() const override;
-    vector<PDFPage*> pages() const override;
+    vector<PDFPage*> getPages() const override;
     PDFPage* page(unsigned int index) const override;
 
     QStandardItemModel* getToc() override;
@@ -166,9 +164,9 @@ public:
     double scaleFactorX() override;
     double scaleFactorY() override;
 
-protected:
-    void rebuild(void) override;
-    void build(void) override;
+private:
+    void rebuild(void);
+    void build(void);
 
     void make_model(QDomNode root, QStandardItem* model);
 };

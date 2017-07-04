@@ -38,8 +38,21 @@ using std::vector;
 #include <QtCore/Qt>
 
 
+class PageView : public QGraphicsPixmapItem {
+    size_t index;
+
+public:
+    PageView(QPixmap pix, size_t i);
+    ~PageView() override;
+
+    size_t getIndex(void) const;
+};
+
+
 class DocScene : public QGraphicsScene {
     Q_OBJECT
+
+    using DbClick = void (DocScene::*)(const QPointF&);
 
     QGraphicsRectItem* select_box = nullptr;
     vector<QGraphicsRectItem*> select_boxes;
@@ -55,11 +68,13 @@ public:
     void eraseHightlight(void);
     void eraseHightlights(void);
 
+    const vector<DbClick> getSceneSignals(void) const;
+
 protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
 
 signals:
-    void doubleClick(QPointF point);
+    void doubleClick(const QPointF& point);
 };
 
 
@@ -90,6 +105,7 @@ public:
     DocScene* getScene(void) const;
 
     const vector<void (DocView::*)(int)> getScrollSignals(void) const;
+    const vector<void (ScrollBar::*)(int)> getScrollBarSignals(void) const;
 
 signals:
     void scrollUp(int step);

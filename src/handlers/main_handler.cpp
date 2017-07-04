@@ -2,6 +2,7 @@
 
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QApplication>
 
 #include "handlers.h"
 
@@ -90,12 +91,12 @@ void MainHandler::createDocWidget(QUrl path) {
     doc_handlers.push_back(doc_handler);
     handlers.push_back(handler);
 
-    ui->getCentral()->addTab(widget, doc->name());
+    ui->getCentral()->addTab(widget, doc->getName());
     amount++;
 }
 
 
-const vector<void (MainHandler::*)(void)> MainHandler::fileMenuSlots() const {
+const vector<void (MainHandler::*)(bool)> MainHandler::fileMenuSlots() const {
     return {
         &MainHandler::onOpen,
         &MainHandler::onPrint,
@@ -105,7 +106,7 @@ const vector<void (MainHandler::*)(void)> MainHandler::fileMenuSlots() const {
     };
 }
 
-const vector<void (MainHandler::*)(void)> MainHandler::viewMenuSlots() const {
+const vector<void (MainHandler::*)(bool)> MainHandler::viewMenuSlots() const {
     return {
         &MainHandler::onZoomIn,
         &MainHandler::onZoomOut,
@@ -117,7 +118,7 @@ const vector<void (MainHandler::*)(void)> MainHandler::viewMenuSlots() const {
     };
 }
 
-const vector<void (MainHandler::*)(void)> MainHandler::toolMenuSlots() const {
+const vector<void (MainHandler::*)(bool)> MainHandler::toolMenuSlots() const {
     return {
         &MainHandler::onHighlight,
         &MainHandler::onUnderline,
@@ -126,7 +127,7 @@ const vector<void (MainHandler::*)(void)> MainHandler::toolMenuSlots() const {
     };
 }
 
-const vector<void (MainHandler::*)(void)> MainHandler::helpMenuSlots() const {
+const vector<void (MainHandler::*)(bool)> MainHandler::helpMenuSlots() const {
     return {
         &MainHandler::onHelp,
         &MainHandler::onAbout,
@@ -143,23 +144,33 @@ const vector<void (MainHandler::*)(int)> MainHandler::centralSlots() const {
 
 void MainHandler::initConnectors() {
     file_menu.set(ui->getMenu()->getFileGroup(), this);
-    file_menu.connect(ui->getMenu()->getFileGroupSignals(), fileMenuSlots());
+    file_menu.connect<bool>(
+        ui->getMenu()->getFileGroupSignals(), fileMenuSlots()
+    );
 
     view_menu.set(ui->getMenu()->getViewGroup(), this);
-    view_menu.connect(ui->getMenu()->getViewGroupSignals(), viewMenuSlots());
+    view_menu.connect<bool>(
+        ui->getMenu()->getViewGroupSignals(), viewMenuSlots()
+    );
 
     tools_menu.set(ui->getMenu()->getToolGroup(), this);
-    tools_menu.connect(ui->getMenu()->getToolGroupSignals(), toolMenuSlots());
+    tools_menu.connect<bool>(
+        ui->getMenu()->getToolGroupSignals(), toolMenuSlots()
+    );
 
     help_menu.set(ui->getMenu()->getHelpGroup(), this);
-    help_menu.connect(ui->getMenu()->getHelpGroupSignals(), helpMenuSlots());
+    help_menu.connect<bool>(
+        ui->getMenu()->getHelpGroupSignals(), helpMenuSlots()
+    );
 
     central.set(ui->getCentral(), this);
-    central.connect(ui->getCentralSignals(), centralSlots());
+    central.connect<int>(
+        ui->getCentralSignals(), centralSlots()
+    );
 }
 
                 /* slots */
-void MainHandler::onOpen() {
+void MainHandler::onOpen(bool) {
     ui->statusBarMessage("open");
     QList<QUrl> file_urls = QFileDialog::getOpenFileUrls(
         ui, "Open Document", QUrl("/home"), "*.pdf"
@@ -167,11 +178,11 @@ void MainHandler::onOpen() {
     open(file_urls);
 }
 
-void MainHandler::onPrint() {
+void MainHandler::onPrint(bool) {
     ui->statusBarMessage("print");
 }
 
-void MainHandler::onProperty() {
+void MainHandler::onProperty(bool) {
     ui->statusBarMessage("property");
     QString title = "Document Information";
     int index = ui->getCentral()->currentIndex();
@@ -181,7 +192,7 @@ void MainHandler::onProperty() {
         QMessageBox::information(ui, title, documents[index]->metaInfo());
 }
 
-void MainHandler::onClose() {
+void MainHandler::onClose(bool) {
     ui->statusBarMessage("close");
     int index = ui->getCentral()->currentIndex();
     if(index == -1)
@@ -190,11 +201,12 @@ void MainHandler::onClose() {
         close(index);
 }
 
-void MainHandler::onQuit() {
+void MainHandler::onQuit(bool) {
     ui->statusBarMessage("quit");
+    qApp->quit();
 }
 
-void MainHandler::onZoomIn() {
+void MainHandler::onZoomIn(bool) {
     ui->statusBarMessage("zoomint in");
     int index = ui->getCentral()->currentIndex();
     if(index == -1)
@@ -203,7 +215,7 @@ void MainHandler::onZoomIn() {
         doc_handlers[index]->resize(0.1);
 }
 
-void MainHandler::onZoomOut() {
+void MainHandler::onZoomOut(bool) {
     ui->statusBarMessage("zooming out");
     int index = ui->getCentral()->currentIndex();
     if(index == -1)
@@ -212,50 +224,50 @@ void MainHandler::onZoomOut() {
         doc_handlers[index]->resize(-0.1);
 }
 
-void MainHandler::onNextPage() {
+void MainHandler::onNextPage(bool) {
     ui->statusBarMessage("on next page");
 }
 
-void MainHandler::onLastPage() {
+void MainHandler::onLastPage(bool) {
     ui->statusBarMessage("last page");
 }
 
-void MainHandler::onFirstPage() {
+void MainHandler::onFirstPage(bool) {
     ui->statusBarMessage("on first page");
 }
 
-void MainHandler::onPrevPage() {
+void MainHandler::onPrevPage(bool) {
     ui->statusBarMessage("on prev page");
 }
 
-void MainHandler::onFullScreen() {
+void MainHandler::onFullScreen(bool) {
     ui->statusBarMessage("on full screen");
 }
 
-void MainHandler::onHelp() {
+void MainHandler::onHelp(bool) {
     ui->statusBarMessage("help");
     HelpDialog dialog;
     dialog.exec();
 }
 
-void MainHandler::onAbout() {
+void MainHandler::onAbout(bool) {
     ui->statusBarMessage("about");
     QMessageBox::information(ui, "About", "v - 0.1");
 }
 
-void MainHandler::onHighlight() {
+void MainHandler::onHighlight(bool) {
     ui->statusBarMessage("hightlight");
 }
 
-void MainHandler::onUnderline() {
+void MainHandler::onUnderline(bool) {
     ui->statusBarMessage("underline");
 }
 
-void MainHandler::onDashed() {
+void MainHandler::onDashed(bool) {
     ui->statusBarMessage("dashed");
 }
 
-void MainHandler::onTranslator() {
+void MainHandler::onTranslator(bool) {
     ui->statusBarMessage("translator");
 }
 

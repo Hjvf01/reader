@@ -20,6 +20,7 @@ SOURCES += main.cpp\
     ../../src/ui/doc_tool_bar.cpp\
     ../../src/ui/doc_widget.cpp\
     ../../src/ui/scroll_bar.cpp\
+    ../../src/ui/page_view.cpp\
     #
     ../../src/model/base_document.cpp\
     ../../src/model/page.cpp\
@@ -33,7 +34,7 @@ HEADERS += ../../src/handlers/handlers.h\
     ../../src/ui/dialogs.h\
     ../../src/model/models.h\
     ../../src/network/network.h\
-    ../../src/connctors/connectors.h\
+    ../../src/connectors/connectors.h\
     tests.h
 
 RESOURCES = ../../src/reader.qrc

@@ -1,3 +1,6 @@
+#include <memory>
+using std::shared_ptr;
+
 #include <QApplication>
 #include <QStyleFactory>
 
@@ -7,18 +10,16 @@
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
     QApplication::setStyle(QStyleFactory::create("Fusion"));
+    using TestClass = shared_ptr<QObject>;
+    using Tests = vector<TestClass>;
 
-    using Test = shared_ptr<QObject>;
-
-    vector<Test> tests = {
-        Test(new SinglePageViewTest("/single_page.pdf")),
-        Test(new MultPageViewTest("/med_doc.pdf")),
+    Tests tests = {
+        //TestClass(new SinglePageViewTest("/single_page.pdf")),
+        //TestClass(new MultPageViewTest("/med_doc.pdf")),
+        TestClass(new SceneTest()),
     };
-
-    for(Test test: tests) QTest::qExec(test.get(), QStringList());
-
-    FindText dialog;
-    dialog.show();
+    for(TestClass test: tests)
+        QTest::qExec(test.get(), QStringList());
 
     int res = /*0;*/ app.exec();
     return res;

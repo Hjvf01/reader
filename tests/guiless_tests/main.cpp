@@ -16,6 +16,8 @@ int main(int argc, char** argv) {
         TestClass(new PDFDocumentTest)
     };
 
-    for(TestClass test: tests) QTest::qExec(test.get(), QStringList());
+    for(TestClass test: tests)
+        QTest::qExec(test.get(), QStringList());
+
     return 0;
 }

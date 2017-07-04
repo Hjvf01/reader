@@ -26,7 +26,7 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
 
 DocWidgetHandler::~DocWidgetHandler() {
     //table_of_content удаляется автоматически
-    delete toc;
+    //delete toc;
 }
 
 
@@ -35,14 +35,6 @@ DocWidget* DocWidgetHandler::getWidget() const { return ui; }
 
 void DocWidgetHandler::translatorConnector() {
     /* Соединяет сигналы обработчика представления документа и переводчика */
-    connect(
-        handler, &DocHandler::translate,
-        this, &DocWidgetHandler::onTranslate
-    );
-    connect(
-        handler, &DocHandler::lookup,
-        this, &DocWidgetHandler::onLookup
-    );
     connect(
         this, &DocWidgetHandler::translate, &trnsl, &TrWorker::onTranslate
     );
@@ -53,17 +45,9 @@ void DocWidgetHandler::translatorConnector() {
     connect(
         &trnsl, &TrWorker::errorSignal, this, &DocWidgetHandler::onError
     );
-    connect(
-        &trnsl, &TrWorker::translateReady,
-        handler, &DocHandler::onTranslateReady
-    );
 
     connect(
         &dict, &DictWorker::errorSignal, this, &DocWidgetHandler::onError
-    );
-    connect(
-        &dict, &DictWorker::lookupReady,
-        handler, &DocHandler::onLookupReady
     );
 
     connect(
@@ -276,14 +260,14 @@ void DocWidgetHandler::onTrToChanged(const QString& lang_name) {
     to_dict_lang = lang_name;
 }
 
-void DocWidgetHandler::onTranslate(const QString text) {
+void DocWidgetHandler::onTranslate(const QString& text) {
     /* формирует запрос перевода слова */
     emit translate(text, {
         Parametr("lang", from_tr_lang + "-" + to_tr_lang)
     });
 }
 
-void DocWidgetHandler::onLookup(const QString text) {
+void DocWidgetHandler::onLookup(const QString& text) {
     /* формирует запрос поиска в словаре */
     emit lookup(text, {
         Parametr("lang", from_dict_lang + "-" + to_dict_lang),
@@ -291,14 +275,13 @@ void DocWidgetHandler::onLookup(const QString text) {
     });
 }
 
-void DocWidgetHandler::onError(QString error_msg) {
+void DocWidgetHandler::onError(const QString& error_msg) {
     qDebug() << error_msg;
 }
 
-void DocWidgetHandler::onDictLangsReady(const QJsonArray result) {
+void DocWidgetHandler::onDictLangsReady(const QJsonArray& result) {
     /* Формирует список пар (исходный язык - целевой) для возможности
      * выбора их пользователем */
-    #define AND &&
     #define SOURCE_LIST ui->getToolBar()->getTrFrom()
 
     QMultiMap<QString, QString> d_langs;
@@ -313,14 +296,13 @@ void DocWidgetHandler::onDictLangsReady(const QJsonArray result) {
 
     for(QString key: dict_langs.keys()) {
         auto entry = d_langs.find(key);
-        while(entry != d_langs.end() AND entry.key() == key) {
+        while(entry != d_langs.end() && entry.key() == key) {
             dict_langs[key].append(entry.value());
             entry++;
         }
     }
     SOURCE_LIST->addItems(dict_langs.keys());
 
-    #undef AND
     #undef SOURCE_LIST
 }
 
@@ -340,34 +322,36 @@ void DocWidgetHandler::onChangePage(const QString &page) {
     handler->goTo((unsigned int)indx - 1);
 }
 
-void DocWidgetHandler::onNextPage() {
+void DocWidgetHandler::onNextPage(bool) {
     unsigned int i = handler->getCurrentPage();
     if(i == handler->getDoc()->amountPages() - 1) return;
     handler->goTo(i + 1);
 }
 
-void DocWidgetHandler::onPrevPage() {
+void DocWidgetHandler::onPrevPage(bool) {
     unsigned int i = handler->getCurrentPage();
     if(i == 0) return;
     onChangePage(QString::number(i));
 }
 
-void DocWidgetHandler::onFirstPage() {
-    if(handler->getDoc()->amountPages() == 1) return;
+void DocWidgetHandler::onFirstPage(bool) {
+    if(handler->getDoc()->amountPages() == 1)
+        return;
     handler->goTo(0);
 }
 
-void DocWidgetHandler::onLastPage() {
-    if(handler->getDoc()->amountPages() == 1) return;
+void DocWidgetHandler::onLastPage(bool) {
+    if(handler->getDoc()->amountPages() == 1)
+        return;
     handler->goTo(handler->getDoc()->amountPages() - 1);
 }
 
-void DocWidgetHandler::onFullScreen() {}
+void DocWidgetHandler::onFullScreen(bool) {}
 
 
 void DocWidgetHandler::onFindDialogShow() { dialog.show(); }
 
-void DocWidgetHandler::onFind(const QString text) {
+void DocWidgetHandler::onFind(const QString& text) {
     vector<pair<QRectF, QString>> results;
     vector<unsigned int> indexes = handler->getIndexes();
 
@@ -388,7 +372,7 @@ void DocWidgetHandler::onFindDialogClose() {
 }
 
 
-void DocWidgetHandler::onReload() {
+void DocWidgetHandler::onReload(bool) {
     if(ui->getToolBar()->getTrFrom()->count() > 0)
         return;
     emit getDictLangs();

@@ -1,7 +1,7 @@
 #include "tests.h"
 
 
-SinglePageViewTest::SinglePageViewTest(QString name) : BaseTest(name) {}
+SinglePageViewTest::SinglePageViewTest(const QString& name) : BaseTest(name) {}
 
 SinglePageViewTest::~SinglePageViewTest() {
     cout << "SinglePage Destructor call" << endl;
