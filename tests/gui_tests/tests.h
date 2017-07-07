@@ -5,6 +5,9 @@ using std::cout;
 using std::endl;
 #include <vector>
 using std::vector;
+#include <memory>
+using std::shared_ptr;
+using std::make_shared;
 
 #include <QtTest/QtTest>
 
@@ -26,7 +29,8 @@ using std::vector;
 #include "../../src/handlers/handlers.h"
 
 
-static const QString base = "/home/roma/ws/C/scrs/e_reader/tests_src/samples";
+static const QString base = "/home/roma/ws/C/scrs/e_reader/tests/samples";
+using DocPtr = shared_ptr<BaseDocument>;
 
 
 class BaseTest : public QObject {
@@ -37,10 +41,8 @@ protected:
     using TextPtr = shared_ptr<Text>;
     using TextList = QList<TextPtr>;
 
-    DocView* view;
-    BaseDocument* doc;
+    DocPtr doc;
     DocHandler* controller;
-    QUrl* path;
 
 protected:
     void compareRect(void);
@@ -88,8 +90,7 @@ class SceneTest : public QObject {
     Q_OBJECT
 
     SceneHandler* controller;
-    BaseDocument* doc;
-    DocScene* scene;
+    shared_ptr<BaseDocument> doc;
     QGraphicsView view;
 
     One2One<DocScene, SceneHandler>* connector;

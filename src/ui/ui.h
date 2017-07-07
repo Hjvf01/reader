@@ -91,7 +91,6 @@ public:
 class DocView : public QGraphicsView {
     Q_OBJECT
 
-    DocScene* scene;
     ScrollBar* scroll;
     int scroll_step = 20;
 
@@ -190,7 +189,6 @@ class DocWidget : public QMainWindow {
     using ShortCuts = vector<QKeySequence>;
     using Icons = vector<QIcon>;
 
-    DocView* view = new DocView;
     DocToolBar* tool_bar = new DocToolBar;
     QDockWidget* left_dock = new QDockWidget;
 

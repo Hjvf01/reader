@@ -5,7 +5,8 @@
 #include "handlers.h"
 
 
-DocHandler::DocHandler(DocView* ui, BaseDocument* doc) : QObject() {
+DocHandler::DocHandler(DocPtr doc) : QObject() {
+    #define DOC_PTR document.get()
     /*
         1. Размер буфера страниц
         2. Представление этого обработчика
@@ -14,7 +15,8 @@ DocHandler::DocHandler(DocView* ui, BaseDocument* doc) : QObject() {
         5. текущее расположени верха виджета относительно начала сцены
         6. Масштаб
     */
-    this->ui = ui;
+    ui = new DocView;
+    handler = new SceneHandler(doc);
     current = 0;
     document = doc;
     location = 0;
@@ -23,20 +25,24 @@ DocHandler::DocHandler(DocView* ui, BaseDocument* doc) : QObject() {
 
     initConnectors();
 
-    for(Index i = 0; i < buf_size; i++) assert(pages[i] == nullptr);
+    for(Index i = 0; i < buf_size; i++)
+        assert(pages[i] == nullptr);
+
     start();
 }
 
 DocHandler::~DocHandler() {
-    //delete scrolling_connector;
-    //delete scene_connector;
+    delete scrolling_connector;
+    delete scroll_bar_connector;
+
+    delete ui;
+    delete handler;
 }
 
 
 unsigned int DocHandler::getCurrentPage() const { return current; }
 int DocHandler::getLocation() const { return location; }
 DocView* DocHandler::getView() const { return ui; }
-BaseDocument* DocHandler::getDoc() const { return document; }
 
 
 void DocHandler::resize(int new_value) {
@@ -46,13 +52,13 @@ void DocHandler::resize(int new_value) {
 
     erasePages();
 
-    document->setDpi(
+    DOC_PTR->setDpi(
         scale_factor * ui->physicalDpiX(),
         scale_factor * ui->physicalDpiY()
     );
 
-    ui->getScene()->setSceneRect(
-        0, 0, document->size()->width(), document->size()->height()
+    handler->getScene()->setSceneRect(
+        0, 0, DOC_PTR->size()->width(), DOC_PTR->size()->height()
     );
 
     fillBuffer(indexes);
@@ -65,8 +71,8 @@ void DocHandler::resize(int new_value) {
 void DocHandler::eraseFront(Index index) {
     PagePtr deleted = pages[0];
     if(deleted != nullptr) {
-        document->page(index - buf_size)->cancelDrawn();
-        ui->getScene()->removeItem(deleted);
+        DOC_PTR->page(index - buf_size)->cancelDrawn();
+        handler->getScene()->removeItem(deleted);
     }
     pages.pop_front();
     delete deleted;
@@ -75,8 +81,8 @@ void DocHandler::eraseFront(Index index) {
 void DocHandler::eraseBack(Index index) {
     PagePtr deleted = pages[pages.size() - 1];
     if(deleted != nullptr) {
-        document->page(index + buf_size)->cancelDrawn();
-        ui->getScene()->removeItem(deleted);
+        DOC_PTR->page(index + buf_size)->cancelDrawn();
+        handler->getScene()->removeItem(deleted);
     }
     pages.pop_back();
     delete deleted;
@@ -90,10 +96,10 @@ void DocHandler::drawNext(unsigned int index) {
         3. Если буффер содержащий страницы заполнен, то
            удалить страницу с представления, удалить графический елемент
     */
-    PagePtr page = new PageView(document->page(index)->render(), index);
+    PagePtr page = new PageView(DOC_PTR->page(index)->render(), index);
 
-    page->setOffset(document->page(index)->offset());
-    ui->getScene()->addItem(page);
+    page->setOffset(DOC_PTR->page(index)->offset());
+    handler->getScene()->addItem(page);
     pages.push_back(page);
 
     assert(pages.size() == buf_size + 1);
@@ -107,10 +113,10 @@ void DocHandler::drawPrev(unsigned int index) {
         Этот метод аналогичен предыдущему. Добавляет страницу не в конец
         а в начало буффера и соотвественно удаляет с конца а не с начала
     */
-    PagePtr page = new PageView(document->page(index)->render(), index);
+    PagePtr page = new PageView(DOC_PTR->page(index)->render(), index);
 
-    page->setOffset(document->page(index)->offset());
-    ui->getScene()->addItem(page);
+    page->setOffset(DOC_PTR->page(index)->offset());
+    handler->getScene()->addItem(page);
     pages.push_front(page);
 
     assert(pages.size() == buf_size + 1);
@@ -121,12 +127,14 @@ void DocHandler::drawPrev(unsigned int index) {
 
 void DocHandler::drawFirst() {
     vector<Index> indexes;
-    unsigned int size = document->amountPages();
+    unsigned int size = DOC_PTR->amountPages();
     if(size > buf_size) {
-        for(Index i = 0; i < buf_size; i++) indexes.push_back(i);
+        for(Index i = 0; i < buf_size; i++)
+            indexes.push_back(i);
         fillBuffer(indexes);
      } else {
-        for(Index i = 0; i < size; i++) indexes.push_back(i);
+        for(Index i = 0; i < size; i++)
+            indexes.push_back(i);
         fillBuffer(indexes);
     }
     current = 0;
@@ -134,12 +142,17 @@ void DocHandler::drawFirst() {
 
 
 void DocHandler::start() {
-    document->setDpi(
+    #define DOC_SIZE document.get()->size()
+
+    document.get()->setDpi(
         scale_factor * ui->physicalDpiX(),
         scale_factor * ui->physicalDpiY()
     );
-    document->init();
-    ui->initScene(document->size());
+    document.get()->init();
+    handler->getScene()->setSceneRect(
+        0, 0, DOC_SIZE->width(), DOC_SIZE->height()
+    );
+    ui->setScene(handler->getScene());
 
     drawFirst();
     ui->centerOn(0, 0);
@@ -165,17 +178,17 @@ void DocHandler::erasePages() {
     /* Полностью стирает страницы */
     for(PagePtr page: pages) {
         if(page != nullptr)
-            ui->getScene()->removeItem(page);
+            handler->getScene()->removeItem(page);
         delete page;
     }
     pages.clear();
-    Index len = document->amountPages();
+    Index len = DOC_PTR->amountPages();
     for(Index i = 0; i < len; i++)
-        document->page(i)->cancelDrawn();
+        DOC_PTR->page(i)->cancelDrawn();
 
     assert(pages.size() == 0);
     for(Index i = 0; i < len; i++)
-        assert(document->page(i)->isDrawn() == false);
+        assert(DOC_PTR->page(i)->isDrawn() == false);
 
     pages.resize(buf_size);
 }
@@ -185,15 +198,15 @@ void DocHandler::goTo(unsigned int index) {
     current = index;
     emit pageChange(current);
 
-    if(document->amountPages() < buf_size) {
+    if(DOC_PTR->amountPages() < buf_size) {
         ui->centerOn(pages[current]);
         return;
     }
 
     erasePages();
 
-    Index last = document->amountPages() - 1;
-    Index len = document->amountPages();
+    Index last = DOC_PTR->amountPages() - 1;
+    Index len = DOC_PTR->amountPages();
 
     if(index + buf_size < last)
         for(Index i = index; i < index + buf_size; i++)
@@ -208,23 +221,23 @@ void DocHandler::goTo(unsigned int index) {
 }
 
 void DocHandler::handleNext(int location) {
-    if(location >= document->page(current)->bottom()) {
-        if(current != document->amountPages() - 1) {
+    if(location >= DOC_PTR->page(current)->bottom()) {
+        if(current != DOC_PTR->amountPages() - 1) {
             current++;
             emit pageChange(current);
         }
-        if(!document->page(current)->isDrawn())
+        if(! DOC_PTR->page(current)->isDrawn())
             drawNext(current);
     }
 }
 
 void DocHandler::handlePrev(int location) {
-    if(location <= document->page(current)->topY()) {
+    if(location <= DOC_PTR->page(current)->topY()) {
         if(current > 0) {
             current--;
             emit pageChange(current);
         }
-        if(!document->page(current)->isDrawn())
+        if(! DOC_PTR->page(current)->isDrawn())
             drawPrev(current);
     }
 }
@@ -232,30 +245,21 @@ void DocHandler::handlePrev(int location) {
 
 void DocHandler::initConnectors() {
     scrolling_connector = new One2One<DocView, DocHandler>(ui, this);
-    scrolling_connector->connect(
-        ui->getScrollSignals(), getScrollHandlers()
-    );
+    vector<void (DocHandler::*)(int)> scroll_handlers = {
+        &DocHandler::onScrollUp, &DocHandler::onScrollDown
+    };
+    scrolling_connector->connect<int>(ui->getScrollSignals(), scroll_handlers);
 
     scroll_bar_connector = new One2One<ScrollBar, DocHandler>(
-        ui->getScroll(),
-        this
+        ui->getScroll(), this
     );
-    scroll_bar_connector->connect(
-        ui->getScrollBarSignals(), getScrollBarHandler()
-    );
-}
-
-const vector<void (DocHandler::*)(int)> DocHandler::getScrollHandlers() const {
-    return {
-        &DocHandler::onScrollUp,
-        &DocHandler::onScrollDown
+    vector<void (DocHandler::*)(int)> scroll_bar_handler = {
+        &DocHandler::onScrollTriggered
     };
+    scroll_bar_connector->connect<int>(
+        ui->getScrollBarSignals(), scroll_bar_handler
+    );
 }
-
-const vector<void (DocHandler::*)(int)> DocHandler::getScrollBarHandler() const {
-    return { &DocHandler::onScrollTriggered };
-}
-
 
 
 void DocHandler::onScrollTriggered(int action) {
@@ -306,12 +310,4 @@ void DocHandler::onScrollUp(int step) {
     location = ui->getScroll()->value();
     ui->getScroll()->setValue(location - step);
     handlePrev(location);
-}
-
-
-const vector<void (DocHandler::*)(unsigned int)>
-DocHandler::getPageChSignal() const {
-    return {
-        &DocHandler::pageChange,
-    };
 }

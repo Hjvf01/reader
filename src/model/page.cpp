@@ -12,7 +12,7 @@ PDFPage::PDFPage(Page *page, int o_x, int o_y, double dpix, double dpiy) {
     this->dpix = dpix;
     this->dpiy = dpiy;
     t_offset = new QPoint(o_x, o_y);
-    //drawn = false;
+    drawn = false;
     scale_factor_x = dpix / DEFAULT_DPI;
     scale_factor_y = dpiy / DEFAULT_DPI;
 }
@@ -75,13 +75,12 @@ QList<QRectF> PDFPage::actualBoundingBoxes() const {
 }
 
 
-pair<QRectF, QString> PDFPage::getTextBox(QPointF point) {
+pair<QRectF, QString> PDFPage::getTextBox(const QPointF& point) {
     /*Вернет пару(прямоугольник, текст)*/
     for(pair<QRectF, QString> box: actualTextBoxes())
         if(box.first.contains(point)) return box;
     return pair<QRectF, QString>(
-        QRectF(0.0, 0.0, 0.0, 0.0),
-        QString()
+        QRectF(0.0, 0.0, 0.0, 0.0), QString()
     );
 }
 
@@ -113,14 +112,14 @@ QList<pair<QRectF, QString>> PDFPage::actualTextBoxes() const {
 }
 
 
-pair<QRectF, QString> PDFPage::findExactOne(QString text) {
+pair<QRectF, QString> PDFPage::findExactOne(const QString& text) {
     for(auto box: actualTextBoxes())
         if(box.second == text) return box;
 
     return pair<QRectF, QString>(QRectF(), QString());
 }
 
-vector<pair<QRectF, QString>> PDFPage::findAll(QString text) {
+vector<pair<QRectF, QString>> PDFPage::findAll(const QString& text) {
     vector<pair<QRectF, QString>> result;
     for(auto box: actualTextBoxes())
         if(box.second == text)

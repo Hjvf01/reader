@@ -9,14 +9,18 @@ MultPageViewTest::~MultPageViewTest() {
 
 void MultPageViewTest::testSceneRect() { compareRect(); }
 
+
 void MultPageViewTest::testScrollingDown() {
-    int h = view->height();
-    int d_h = doc->size()->height();
+    #define DOC_PTR doc.get()
+    #define VIEW controller->getView()
+
+    int h = VIEW->height();
+    int d_h = DOC_PTR->size()->height();
     int loc = controller->getLocation();
 
     while(controller->getLocation() + h < d_h) {
         vector<unsigned int> prev_pages = controller->getIndexes();
-        QTest::keyClick(view, Qt::Key_Down);
+        QTest::keyClick(VIEW, Qt::Key_Down);
         QVERIFY(loc == controller->getLocation());
         vector<unsigned int> after_pages = controller->getIndexes();
         if(prev_pages[2] != after_pages[2])
@@ -28,21 +32,21 @@ void MultPageViewTest::testScrollingDown() {
 
 
 void MultPageViewTest::testTextBoxes() {
-    auto len = doc->amountPages();
+    auto len = DOC_PTR->amountPages();
     for(unsigned int i = 0; i < len; i++) {
-        for(auto base_box: doc->page(i)->baseBoundingBoxes()) {
+        for(auto base_box: DOC_PTR->page(i)->baseBoundingBoxes()) {
             auto base_rect = new QGraphicsRectItem(base_box);
-            view->getScene()->addItem(base_rect);
+            VIEW->scene()->addItem(base_rect);
         }
-        for(QRectF actual_box: doc->page(i)->actualBoundingBoxes()) {
+        for(QRectF actual_box: DOC_PTR->page(i)->actualBoundingBoxes()) {
             auto actual_rect = new QGraphicsRectItem(actual_box);
             actual_rect->setBrush(Qt::NoBrush);
             actual_rect->setPen(QPen(Qt::red));
-            view->getScene()->addItem(actual_rect);
+            VIEW->scene()->addItem(actual_rect);
         }
-        view->getScene()->addItem(new QGraphicsRectItem(
-            doc->page(i)->topX(), doc->page(i)->topY(),
-            doc->page(i)->baseWidth(), doc->page(i)->baseHeight()
+        VIEW->scene()->addItem(new QGraphicsRectItem(
+            DOC_PTR->page(i)->topX(), DOC_PTR->page(i)->topY(),
+            DOC_PTR->page(i)->baseWidth(), DOC_PTR->page(i)->baseHeight()
         ));
     }
 }
@@ -51,10 +55,10 @@ void MultPageViewTest::testTextBoxes() {
 void MultPageViewTest::testSearch() {
     QString text_to_search = "программирование";
     pair<QRectF, QString> result =
-        doc->page(3)->findExactOne(text_to_search);
+        DOC_PTR->page(3)->findExactOne(text_to_search);
     QVERIFY(result.second == text_to_search);
 
     vector<pair<QRectF, QString>> results =
-        doc->page(3)->findAll(text_to_search);
+        DOC_PTR->page(3)->findAll(text_to_search);
      qDebug() << results.size();
 }

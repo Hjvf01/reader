@@ -14,9 +14,9 @@ int main(int argc, char** argv) {
     using Tests = vector<TestClass>;
 
     Tests tests = {
-        //TestClass(new SinglePageViewTest("/single_page.pdf")),
-        //TestClass(new MultPageViewTest("/med_doc.pdf")),
-        TestClass(new SceneTest()),
+        TestClass(new SinglePageViewTest("/single_page.pdf")),
+        TestClass(new MultPageViewTest("/med_doc.pdf")),
+        //TestClass(new SceneTest()),
     };
     for(TestClass test: tests)
         QTest::qExec(test.get(), QStringList());

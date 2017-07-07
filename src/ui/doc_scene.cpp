@@ -6,7 +6,9 @@ using std::end;
 #include "ui.h"
 
 
-DocScene::DocScene() : QGraphicsScene() { setBackgroundBrush(Qt::darkGray); }
+DocScene::DocScene() : QGraphicsScene() {
+    setBackgroundBrush(Qt::darkGray);
+}
 
 DocScene::~DocScene() {
     if(select_box != nullptr)

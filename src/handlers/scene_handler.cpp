@@ -1,17 +1,18 @@
 #include "handlers.h"
 
 
-SceneHandler::SceneHandler(DocScene *scene, BaseDocument* doc) : QObject() {
-    this->scene = scene;
-    this->document = doc;
+SceneHandler::SceneHandler(DocPtr doc) : QObject() {
+    scene = new DocScene;
+    document = doc;
 
     initConnectors();
 }
-SceneHandler::~SceneHandler() {}
+
+SceneHandler::~SceneHandler() {
+    //delete scene;
+}
 
 
-void SceneHandler::setScene(DocScene *scene) { this->scene = scene; }
-void SceneHandler::setDoc(BaseDocument* doc) { document = doc; }
 DocScene* SceneHandler::getScene() const { return scene; }
 
 
@@ -39,9 +40,8 @@ void SceneHandler::onDoubleClick(const QPointF& point) {
     for(QGraphicsItem* page: pages) {
         if(page->contains(point)) {
             pair<QRectF, QString> word_box =
-                document->page(
-                    static_cast<PageView*>(page)->getIndex()
-                )->getTextBox(point);
+                document.get()->page(
+                    static_cast<PageView*>(page)->getIndex())->getTextBox(point);
 
             if(word_box.first.width() == 0 && word_box.first.height() == 0)
                 return;

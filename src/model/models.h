@@ -33,7 +33,7 @@ class PDFPage {
     using Text = Poppler::TextBox;
     using TextPtr = shared_ptr<Text>;
 
-    bool drawn = false;
+    bool drawn;
     int width;
     int height;
     int actual_width;
@@ -49,21 +49,21 @@ class PDFPage {
 
 public:
     PDFPage(Page* page, int o_x, int o_y, double dpix, double dpiy);
-    ~PDFPage();
+    ~PDFPage(void);
 
-    QSize size() const;
-    QSize actualSize() const;
-    QPoint offset() const;
+    QSize size(void) const;
+    QSize actualSize(void) const;
+    QPoint offset(void) const;
 
-    int topX() const;
-    int topY() const;
-    int actualHeight() const;
-    int actualWidth() const;
-    int baseHeight() const;
-    int baseWidth() const;
-    int bottom() const;
-    int centerX() const;
-    int centerY() const;
+    int topX(void) const;
+    int topY(void) const;
+    int actualHeight(void) const;
+    int actualWidth(void) const;
+    int baseHeight(void) const;
+    int baseWidth(void) const;
+    int bottom(void) const;
+    int centerX(void) const;
+    int centerY(void) const;
 
     QList<TextPtr> textBoxes() const;
     QList<pair<QRectF, QString>> actualTextBoxes() const;
@@ -71,10 +71,10 @@ public:
     QList<QRectF> baseBoundingBoxes() const;
     QList<QRectF> actualBoundingBoxes() const;
 
-    pair<QRectF, QString> getTextBox(QPointF point);
+    pair<QRectF, QString> getTextBox(const QPointF& point);
 
-    pair<QRectF, QString> findExactOne(QString text);
-    vector<pair<QRectF, QString>> findAll(QString text);
+    pair<QRectF, QString> findExactOne(const QString& text);
+    vector<pair<QRectF, QString>> findAll(const QString& text);
 
     bool isDrawn() const;
     void cancelDrawn();
@@ -115,6 +115,16 @@ public:
 protected:
     QString path;
     QString name;
+};
+
+
+class TocItem : public QStandardItem {
+    //Q_OBJECT
+};
+
+
+class TocModel : public QStandardItemModel {
+    //Q_OBJECT
 };
 
 

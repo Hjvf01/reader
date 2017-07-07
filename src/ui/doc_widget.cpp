@@ -3,7 +3,7 @@
 
 DocWidget::DocWidget(QWidget *parent) : QMainWindow(parent) {
     addToolBar(tool_bar);
-    setCentralWidget(view);
+    //setCentralWidget(view);
 
     for(QAction* act: context_menu)
         addAction(act);
@@ -18,7 +18,7 @@ DocWidget::DocWidget(QWidget *parent) : QMainWindow(parent) {
     setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
-DocView* DocWidget::getView() const { return view; }
+//DocView* DocWidget::getView() const { return view; }
 DocToolBar* DocWidget::getToolBar() const { return tool_bar; }
 
 QAction* DocWidget::getFindAction() const { return context_menu[0]; }
@@ -39,7 +39,7 @@ void DocWidget::setLeftDock(QWidget *widget) {
 
 DocWidget::~DocWidget() {
     for(auto act: context_menu) delete act;
-    delete view;
+    //delete view;
     delete tool_bar;
     delete left_dock;
 }

@@ -7,6 +7,7 @@ using std::vector;
 
 #include <QtCore/QObject>
 #include <QtCore/QDebug>
+#include <Qt>
 
 
 using Index = unsigned int;
@@ -18,7 +19,8 @@ public:
 
     virtual void connect(
         const vector<void (Sender::*)(void)>&,
-        const vector<void (Receiver::*)(void)>&
+        const vector<void (Receiver::*)(void)>&,
+        Qt::ConnectionType type = Qt::AutoConnection
     ) const = 0;
 
     virtual ~BaseConnector() {}
@@ -27,16 +29,20 @@ public:
 
 template <typename Sender, typename Receiver>
 class One2One : public BaseConnector<Sender, Receiver> {
-    Sender* sender = nullptr;
-    Receiver* receiver = nullptr;
+    Sender* sender;
+    Receiver* receiver;
 
 public:
-    One2One() {}
+    One2One() {
+        sender = nullptr;
+        receiver = nullptr;
+    }
 
     One2One(Sender* sender, Receiver* receiver) {
         this->sender = sender;
         this->receiver = receiver;
     }
+
 
     void set(Sender* sender, Receiver* receiver) {
         if(this->sender == nullptr && this->receiver == nullptr) {
@@ -45,66 +51,62 @@ public:
         }
     }
 
-    template <typename Type>
+
+    template <typename Type, typename... Rest>
     void connect(
-            const vector<void (Sender::*)(Type)>& _signals,
-            const vector<void (Receiver::*)(Type)>& _slots
+            const vector<void (Sender::*)(Type, Rest...)>& _signals,
+            const vector<void (Receiver::*)(Type, Rest...)>& _slots,
+            Qt::ConnectionType type = Qt::AutoConnection
     ) const {
         assert(_signals.size() == _slots.size());
 
         Index len = _signals.size();
-        for(Index i = 0; i < len; i++) {
-            QObject::connect(sender, _signals[i], receiver, _slots[i]);
-        }
+        for(Index i = 0; i < len; i++)
+            QObject::connect(sender, _signals[i], receiver, _slots[i], type);
     }
 
-    template <typename Type> void crefConnect(
-            const vector<void (Sender::*)(const Type&)>& _signals,
-            const vector<void (Receiver::*)(const Type&)>& _slots
-    ) const {
-        assert(_signals.size() == _slots.size());
-
-        Index len = _signals.size();
-        for(Index i = 0; i < len; i++) {
-            QObject::connect(sender, _signals[i], receiver, _slots[i]);
-        }
-    }
 
     void connect(
             const vector<void (Sender::*)(void)>& _signals,
-            const vector<void (Receiver::*)(void)>& _slots
+            const vector<void (Receiver::*)(void)>& _slots,
+            Qt::ConnectionType type = Qt::AutoConnection
     ) const override {
         assert(_signals.size() == _slots.size());
 
         size_t len = _signals.size();
         for(size_t i = 0; i < len; i++)
-            QObject::connect(sender, _signals[i], receiver, _slots[i]);
+            QObject::connect(sender, _signals[i], receiver, _slots[i], type);
     }
+
 
     void disconnect(void) const override {
         QObject::disconnect(sender, 0, receiver, 0);
     }
 
+
     ~One2One() override {
         disconnect();
     }
-
 };
 
 
 template <typename Sender, typename Receiver>
 class One2Many : public BaseConnector<Sender, Receiver> {
-    Sender* sender = nullptr;
+    Sender* sender;
     vector<Receiver*> receivers;
 
 public:
-    One2Many() {}
+    One2Many() {
+        sender = nullptr;
+    }
+
 
     One2Many(Sender* sender, const vector<Receiver*>& receivers) {
         this->sender = sender;
         for(Receiver* receiver: receivers)
             this->receivers.push_back(receiver);
     }
+
 
     void set(Sender* sender, const vector<Receiver*>& receivers) {
         if(sender == nullptr && this->receivers.size() == 0) {
@@ -114,41 +116,48 @@ public:
         }
     }
 
-    template <typename Type> void connect(
-            const vector<void (Sender::*)(Type)>& _signals,
-            const vector<void (Receiver::*)(Type)>& _slots
+
+    template <typename Type, typename... Rest> void connect(
+            const vector<void (Sender::*)(Type, Rest...)>& _signals,
+            const vector<void (Receiver::*)(Type, Rest...)>& _slots,
+            Qt::ConnectionType type = Qt::AutoConnection
     ) const {
         assert(_signals.size() == _slots.size());
         assert(receivers.size() == _signals.size());
 
         Index len = _signals.size();
-        for(Index i = 0; i < len; i++) {
-            QObject::connect(sender, _signals[i], receivers[i], _slots[i]);
-        }
+        for(Index i = 0; i < len; i++)
+            QObject::connect(
+                sender, _signals[i], receivers[i], _slots[i], type
+            );
     }
+
 
     void connect(
             const vector<void (Sender::*)(void)>& _signals,
-            const vector<void (Receiver::*)(void)>& _slots
+            const vector<void (Receiver::*)(void)>& _slots,
+            Qt::ConnectionType type = Qt::AutoConnection
     ) const override {
         assert(_signals.size() == _slots.size());
         assert(receivers.size() == _signals.size());
 
         Index len = _signals.size();
-        for(Index i = 0; i < len; i++) {
-            QObject::connect(sender, _signals[i], receivers[i], _slots[i]);
-        }
+        for(Index i = 0; i < len; i++)
+            QObject::connect(
+                sender, _signals[i], receivers[i], _slots[i], type
+            );
     }
+
 
     void disconnect() const override {
         for(Receiver* receiver: receivers)
             QObject::disconnect(sender, nullptr, receiver, nullptr);
     }
 
+
     ~One2Many() override {
         disconnect();
     }
-
 };
 
 
@@ -160,16 +169,20 @@ class Many2Many : public BaseConnector<Sender, Receiver> {
 public:
     Many2Many() {}
 
+
     Many2Many(
         const vector<Sender*>& senders, const vector<Receiver*>& receivers
     ) {
         assert(senders.size() == receivers.size());
 
-        for(Sender* sender: senders) this->senders.push_back(sender);
-        for(Receiver* receiver: receivers) this->receivers.push_back(receiver);
+        for(Sender* sender: senders)
+            this->senders.push_back(sender);
+        for(Receiver* receiver: receivers)
+            this->receivers.push_back(receiver);
 
         assert(this->senders.size() == this->receivers.size());
     }
+
 
     void set(
         const vector<Sender*>& senders, const vector<Receiver*>& receivers
@@ -185,31 +198,40 @@ public:
         }
     }
 
-    template <typename Type> void connect(
-            const vector<void (Sender::*)(Type)>& _signals,
-            const vector<void (Receiver::*)(Type)>& _slots
+
+    template <typename Type, typename... Rest> void connect(
+            const vector<void (Sender::*)(Type, Rest...)>& _signals,
+            const vector<void (Receiver::*)(Type, Rest...)>& _slots,
+            Qt::ConnectionType type = Qt::AutoConnection
     ) const {
         assert(_signals.size() == senders.size());
         assert(_slots.size() == receivers.size());
 
         Index len = _signals.size();
         for(Index i = 0; i < len; i++) {
-            QObject::connect(senders[i], _signals[i], receivers[i], _slots[i]);
+            QObject::connect(
+                senders[i], _signals[i], receivers[i], _slots[i], type
+            );
         }
     }
 
+
     void connect(
             const vector<void (Sender::*)(void)>& _signals,
-            const vector<void (Receiver::*)(void)>& _slots
+            const vector<void (Receiver::*)(void)>& _slots,
+            Qt::ConnectionType type = Qt::AutoConnection
     ) const override {
         assert(_signals.size() == senders.size());
         assert(_slots.size() == receivers.size());
 
         Index len = _signals.size();
         for(Index i = 0; i < len; i++) {
-            QObject::connect(senders[i], _signals[i], receivers[i], _slots[i]);
+            QObject::connect(
+                senders[i], _signals[i], receivers[i], _slots[i], type
+            );
         }
     }
+
 
     void disconnect() const override {
         Index len = senders.size();
@@ -226,16 +248,20 @@ public:
 template <typename Sender, typename Receiver>
 class Many2One : public BaseConnector<Sender, Receiver> {
     vector<Sender*> senders;
-    Receiver* receiver = nullptr;
+    Receiver* receiver;
 
 public:
-    Many2One() {}
+    Many2One() {
+        receiver = nullptr;
+    }
+
 
     Many2One(const vector<Sender*>& senders, Receiver* receiver) {
         this->receiver = receiver;
         for(Sender* sender: senders)
             this->senders.push_back(sender);
     }
+
 
     void set(const vector<Sender*>& senders, Receiver* receiver) {
         if(this->receiver == nullptr && this->senders.size() == 0) {
@@ -244,29 +270,38 @@ public:
         }
     }
 
-    template<typename Type> void connect(
-            const vector<void (Sender::*)(Type)>& _signals,
-            const vector<void (Receiver::*)(Type)>& _slots
+
+    template<typename Type, typename... Rest> void connect(
+            const vector<void (Sender::*)(Type, Rest...)>& _signals,
+            const vector<void (Receiver::*)(Type, Rest...)>& _slots,
+            Qt::ConnectionType type = Qt::AutoConnection
     ) const {
         assert(_signals.size() == _slots.size());
         assert(_signals.size() == senders.size());
 
         Index len = _signals.size();
         for(Index i = 0; i < len; i++)
-            QObject::connect(senders[i], _signals[i], receiver, _slots[i]);
+            QObject::connect(
+                senders[i], _signals[i], receiver, _slots[i], type
+            );
     }
+
 
     void connect(
             const vector<void (Sender::*)(void)>& _signals,
-            const vector<void (Receiver::*)(void)>& _slots
+            const vector<void (Receiver::*)(void)>& _slots,
+            Qt::ConnectionType type = Qt::AutoConnection
     ) const override {
         assert(_signals.size() == _slots.size());
         assert(_signals.size() == senders.size());
 
         Index len = _signals.size();
         for(Index i = 0; i < len; i++)
-            QObject::connect(senders[i], _signals[i], receiver, _slots[i]);
+            QObject::connect(
+                senders[i], _signals[i], receiver, _slots[i], type
+            );
     }
+
 
     void disconnect() const override {
         for(Sender* sender: senders)

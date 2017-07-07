@@ -4,29 +4,19 @@
 
 
 DocView::DocView(QWidget *parent) : QGraphicsView(parent) {
-    scene = new DocScene;
     scroll = new ScrollBar;
     scroll->setPageStep(scroll_step);
     scroll->setSingleStep(scroll_step);
-    qDebug() << scroll->pageStep();
     setVerticalScrollBar(scroll);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setAlignment(Qt::AlignCenter);
 }
 
 DocView::~DocView() {
-    delete scene;
     delete scroll;
 }
 
 
-void DocView::initScene(QSize* size) {
-    scene->setSceneRect(0, 0, size->width(), size->height());
-    setScene(scene);
-}
-
-
-DocScene* DocView::getScene() const { return scene; }
 ScrollBar* DocView::getScroll() const { return scroll; }
 
 

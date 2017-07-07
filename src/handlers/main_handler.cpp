@@ -30,7 +30,7 @@ void MainHandler::open(QList<QUrl> files) {
         );
         assert(
             handlers[amount - 1]->getWidget() == widgets[amount - 1] &&
-            doc_handlers[amount - 1]->getDoc() == documents[amount - 1]
+                true
         );
     }
 }
@@ -78,16 +78,16 @@ void MainHandler::createDocWidget(QUrl path) {
         4. Соединить сигналы предстадения с его обработчиком
     */
     DocWidget* widget = new DocWidget;
-    BaseDocument* doc = new PDFDocument(path.path(), path.fileName());
+    DocPtr doc = DocPtr(new PDFDocument(path.path(), path.fileName()));
     DocHandler* doc_handler = new DocHandler(
-        widget->getView(), doc
+        doc
     );
     DocWidgetHandler* handler = new DocWidgetHandler(
         widget, doc_handler
     );
 
     widgets.push_back(widget);
-    documents.push_back(doc);
+    //documents.push_back(doc);
     doc_handlers.push_back(doc_handler);
     handlers.push_back(handler);
 

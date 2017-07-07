@@ -14,14 +14,14 @@ DocWidgetHandler::DocWidgetHandler(DocWidget* ui, DocHandler* h) : QObject() {
     widgetConnectors();
     toolBarConnectors();
 
-    toc = handler->getDoc()->getToc();
+    //toc = handler->getDoc()->getToc();
     table_of_content->setModel(toc);
     ui->setLeftDock(table_of_content);
-
+/*
     ui->getToolBar()->setPageNums(
         QString::number(handler->getCurrentPage() + 1),
         QString::number(handler->getDoc()->amountPages())
-    );
+    );*/
 }
 
 DocWidgetHandler::~DocWidgetHandler() {
@@ -213,8 +213,8 @@ void DocWidgetHandler::widgetConnectors() {
             /* slots */
 void DocWidgetHandler::onTOCActivated(const QModelIndex &index) {
     try {
-        int indx = handler->getDoc()->getPage(index);
-        handler->goTo(indx);
+        //int indx = handler->getDoc()->getPage(index);
+        //handler->goTo(indx);
     } catch(char const* err) {
         qDebug() << err;
     }
@@ -324,7 +324,7 @@ void DocWidgetHandler::onChangePage(const QString &page) {
 
 void DocWidgetHandler::onNextPage(bool) {
     unsigned int i = handler->getCurrentPage();
-    if(i == handler->getDoc()->amountPages() - 1) return;
+    //if(i == handler->getDoc()->amountPages() - 1) return;
     handler->goTo(i + 1);
 }
 
@@ -335,15 +335,15 @@ void DocWidgetHandler::onPrevPage(bool) {
 }
 
 void DocWidgetHandler::onFirstPage(bool) {
-    if(handler->getDoc()->amountPages() == 1)
+    //if(handler->getDoc()->amountPages() == 1)
         return;
     handler->goTo(0);
 }
 
 void DocWidgetHandler::onLastPage(bool) {
-    if(handler->getDoc()->amountPages() == 1)
+    //if(handler->getDoc()->amountPages() == 1)
         return;
-    handler->goTo(handler->getDoc()->amountPages() - 1);
+    //handler->goTo(handler->getDoc()->amountPages() - 1);
 }
 
 void DocWidgetHandler::onFullScreen(bool) {}
@@ -354,7 +354,7 @@ void DocWidgetHandler::onFindDialogShow() { dialog.show(); }
 void DocWidgetHandler::onFind(const QString& text) {
     vector<pair<QRectF, QString>> results;
     vector<unsigned int> indexes = handler->getIndexes();
-
+/*
     for(unsigned int i: indexes)
         for(auto result: handler->getDoc()->page(i)->findAll(text)) {
             results.push_back(result);
@@ -364,11 +364,11 @@ void DocWidgetHandler::onFind(const QString& text) {
     for(auto result: results)
         boxes.push_back(result.first);
 
-    ui->getView()->getScene()->setHightLights(boxes);
+    ui->getView()->getScene()->setHightLights(boxes);*/
 }
 
 void DocWidgetHandler::onFindDialogClose() {
-    ui->getView()->getScene()->eraseHightlights();
+    //ui->getView()->getScene()->eraseHightlights();
 }
 
 

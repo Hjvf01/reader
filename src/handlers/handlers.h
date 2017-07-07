@@ -14,22 +14,21 @@ using std::deque;
 #include "../connectors/connectors.h"
 
 
+using DocPtr = shared_ptr<BaseDocument>;
 class SceneHandler : public QObject {
     Q_OBJECT
 
     DocScene* scene;
-    BaseDocument* document;
+    DocPtr document;
     TrDialog dialog;
     bool dialog_shown;
 
     One2One<DocScene, SceneHandler> connector;
 
 public:
-    SceneHandler(DocScene* scene, BaseDocument* doc);
+    SceneHandler(DocPtr doc);
     ~SceneHandler() override;
 
-    void setScene(DocScene* scene);
-    void setDoc(BaseDocument* doc);
     DocScene* getScene(void) const;
 
 signals:
@@ -59,22 +58,22 @@ class DocHandler : public QObject {
     DocView* ui;
     Index current;
     deque<PagePtr> pages;
-    BaseDocument* document;
+    DocPtr document;
     int location;
     double scale_factor;
+    SceneHandler* handler;
 
     One2One<DocView, DocHandler>* scrolling_connector;
     One2One<ScrollBar, DocHandler>* scroll_bar_connector;
 
 public:
-    DocHandler(DocView* widget, BaseDocument* doc);
+    DocHandler(DocPtr doc);
     ~DocHandler() override;
 
     unsigned int getCurrentPage(void) const;
     int getLocation(void) const;
 
     DocView* getView(void) const;
-    BaseDocument* getDoc(void) const;
 
     void resize(int new_value);
 
@@ -105,12 +104,7 @@ private:
     void eraseBack(Index index);
     void erasePages();
 
-private:
     void initConnectors(void);
-
-    const vector<void (DocHandler::*)(int)> getScrollHandlers(void) const;
-    const vector<void (DocHandler::*)(int)> getScrollBarHandler(void) const;
-
 signals:
     void pageChange(unsigned int index);
 };
