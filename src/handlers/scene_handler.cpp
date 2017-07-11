@@ -8,9 +8,7 @@ SceneHandler::SceneHandler(DocPtr doc) : QObject() {
     initConnectors();
 }
 
-SceneHandler::~SceneHandler() {
-    //delete scene;
-}
+SceneHandler::~SceneHandler() { /* Сцена удалится автоматически */ }
 
 
 DocScene* SceneHandler::getScene() const { return scene; }
@@ -36,13 +34,13 @@ void SceneHandler::onDoubleClick(const QPointF& point) {
     if(pointBeyondScene(point))
         return;
 
-    QList<QGraphicsItem*> pages = scene->items();
-    for(QGraphicsItem* page: pages) {
-        if(page->contains(point)) {
+    QList<QGraphicsItem*> items = scene->items();
+    for(QGraphicsItem* item: items) {
+        if(item->contains(point)) {
+            PageView* page = dynamic_cast<PageView*>(item);
+            if(page == nullptr) continue;
             pair<QRectF, QString> word_box =
-                document.get()->page(
-                    static_cast<PageView*>(page)->getIndex())->getTextBox(point);
-
+                document.get()->page(page->getIndex())->getTextBox(point);
             if(word_box.first.width() == 0 && word_box.first.height() == 0)
                 return;
             scene->setHightLight(word_box.first);
@@ -51,16 +49,13 @@ void SceneHandler::onDoubleClick(const QPointF& point) {
             emit lookup(word_box.second);
 
             dialog.setWindowTitle(word_box.second);
-
             return;
         }
     }
 }
 
 
-void SceneHandler::onError(const QString& error_msg) {
-    qDebug() << error_msg;
-}
+void SceneHandler::onError(const QString& error_msg) { qDebug() << error_msg; }
 
 
 void SceneHandler::onTranslateReady(const QJsonObject& result) {

@@ -8,6 +8,13 @@ CONFIG += c++14
 INCLUDEPATH  += /usr/include/poppler/qt5
 LIBS         += -L/usr/lib -lpoppler-qt5
 
+linux-clang {
+    message(Linux-clang)
+}
+
+linux-g++ {
+    message(Linux-g++)
+}
 
 SOURCES += main.cpp\
     ../../src/handlers/doc_handler.cpp\

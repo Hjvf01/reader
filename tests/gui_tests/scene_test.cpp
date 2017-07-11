@@ -21,21 +21,22 @@ SceneTest::~SceneTest() {}
 
 
 void SceneTest::testDbClick() {
-    size_t len = doc.get()->amountPages();
+    unsigned int len = doc.get()->amountPages();
     vector<PageView*> page_views(len);
-    for(size_t i = 0; i < len; i++) {
+    for(unsigned int i = 0; i < len; i++) {
         PageView* page_v = new PageView(doc.get()->page(i)->render(), i);
         page_v->setOffset(doc.get()->page(i)->offset());
         controller->getScene()->addItem(page_v);
         page_views[i] = page_v;
     }
 
+
     vector<QPointF> points = {
         QPointF(164, 406),
         QPointF(330, 94),
     };
     controller->getScene()->doubleClick(points[0]);
-    Q_ASSERT(controller->getScene()->items().size() == len);
+    Q_ASSERT((unsigned int)controller->getScene()->items().size() == len);
     controller->getScene()->doubleClick(points[1]);
-    Q_ASSERT(controller->getScene()->items().size() == len + 1);
+    Q_ASSERT((unsigned int)controller->getScene()->items().size() == len + 1);
 }

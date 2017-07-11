@@ -30,9 +30,9 @@ using std::make_shared;
 
 
 static const QString base = "/home/roma/ws/C/scrs/e_reader/tests/samples";
+
+
 using DocPtr = shared_ptr<BaseDocument>;
-
-
 class BaseTest : public QObject {
     Q_OBJECT
 
@@ -81,7 +81,10 @@ public:
 private slots:
     void testSceneRect(void);
     void testScrollingDown(void);
-    void testTextBoxes(void);
+    void testScrollingUp(void);
+    void testGoToNext(void);
+    void testGoToPrev(void);
+    void testGoTo(void);
     void testSearch(void);
 };
 

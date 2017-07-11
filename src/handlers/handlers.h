@@ -6,6 +6,8 @@ using std::shared_ptr;
 using std::make_shared;
 #include <deque>
 using std::deque;
+#include <string>
+using std::string;
 
 #include "../ui/ui.h"
 #include "../model/models.h"
@@ -17,6 +19,9 @@ using std::deque;
 using DocPtr = shared_ptr<BaseDocument>;
 class SceneHandler : public QObject {
     Q_OBJECT
+
+    string lang_from;
+    string lang_to;
 
     DocScene* scene;
     DocPtr document;
@@ -79,9 +84,12 @@ public:
 
     vector<Index> getIndexes(void);
 
+    void goToNext(void);
+    void goToPrev(void);
     void goTo(unsigned int index);
 
-    const vector<void (DocHandler::*)(unsigned int)> getPageChSignal(void) const;
+    const vector<void (DocHandler::*)(unsigned int)>
+        getPageChSignal(void) const;
 
 public slots:
     void onScrollUp(int step);
@@ -191,7 +199,6 @@ public slots:
     void onFindDialogShow(void);
     void onFindDialogClose(void);
 
-private slots:
     void onReload(bool);
 };
 

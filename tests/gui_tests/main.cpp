@@ -16,11 +16,11 @@ int main(int argc, char** argv) {
     Tests tests = {
         TestClass(new SinglePageViewTest("/single_page.pdf")),
         TestClass(new MultPageViewTest("/med_doc.pdf")),
-        //TestClass(new SceneTest()),
+        TestClass(new SceneTest()),
     };
     for(TestClass test: tests)
         QTest::qExec(test.get(), QStringList());
 
-    int res = /*0;*/ app.exec();
+    int res = 0; //app.exec();
     return res;
 }
