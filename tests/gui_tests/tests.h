@@ -32,6 +32,12 @@ using std::make_shared;
 static const QString base = "/home/roma/ws/C/scrs/e_reader/tests/samples";
 
 
+enum class VerbosityLevel {
+    silent = 0,
+    verbose = 1
+};
+
+
 using DocPtr = shared_ptr<BaseDocument>;
 class BaseTest : public QObject {
     Q_OBJECT
@@ -43,13 +49,14 @@ protected:
 
     DocPtr doc;
     DocHandler* controller;
+    VerbosityLevel level;
 
 protected:
     void compareRect(void);
     double getCurrentLocation(int loc);
 
 public:
-    BaseTest(const QString& name);
+    BaseTest(const QString& name, VerbosityLevel lvl);
     virtual ~BaseTest();
 };
 
@@ -58,7 +65,7 @@ class SinglePageViewTest : public BaseTest {
     Q_OBJECT
 
 public:
-    explicit SinglePageViewTest(const QString& name);
+    explicit SinglePageViewTest(const QString& name, VerbosityLevel lvl);
     ~SinglePageViewTest() override;
 
 private slots:
@@ -75,8 +82,11 @@ class MultPageViewTest : public BaseTest {
     Q_OBJECT
 
 public:
-    MultPageViewTest(const QString& name);
+    MultPageViewTest(const QString& name, VerbosityLevel lvl);
     ~MultPageViewTest() override;
+
+private:
+    void locationLog(int);
 
 private slots:
     void testSceneRect(void);
@@ -95,11 +105,12 @@ class SceneTest : public QObject {
     SceneHandler* controller;
     shared_ptr<BaseDocument> doc;
     QGraphicsView view;
+    VerbosityLevel level;
 
     One2One<DocScene, SceneHandler>* connector;
 
 public:
-    SceneTest();
+    SceneTest(VerbosityLevel lvl=VerbosityLevel::silent);
     ~SceneTest() override;
 
 private slots:

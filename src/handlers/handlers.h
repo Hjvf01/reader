@@ -16,9 +16,21 @@ using std::string;
 #include "../connectors/connectors.h"
 
 
+enum class DoubleClickMode {
+    hightlight = 0,
+    underline  = 1,
+    dashed     = 2,
+    translate  = 3,
+    clipboard  = 4
+};
+
+
 using DocPtr = shared_ptr<BaseDocument>;
 class SceneHandler : public QObject {
     Q_OBJECT
+
+    static DoubleClickMode dbclick_mode = DoubleClickMode::translate;
+
 
     string lang_from;
     string lang_to;
@@ -36,6 +48,11 @@ public:
 
     DocScene* getScene(void) const;
 
+    static void setDoubleClickMode(const DoubleClickMode& mode);
+
+    void setLangFrom(const QString& lang);
+    void setLangTo(const QString& lang);
+
 signals:
     void translate(const QString&);
     void lookup(const QString&);
@@ -49,7 +66,7 @@ public slots:
 private:
     bool pointBeyondScene(const QPointF& point);
     void initConnectors(void);
-    const vector<void (SceneHandler::*)(const QPointF&)>handlers(void) const;
+    void emitter(const QString& text, const QRectF& box);
 };
 
 
@@ -87,9 +104,6 @@ public:
     void goToNext(void);
     void goToPrev(void);
     void goTo(unsigned int index);
-
-    const vector<void (DocHandler::*)(unsigned int)>
-        getPageChSignal(void) const;
 
 public slots:
     void onScrollUp(int step);

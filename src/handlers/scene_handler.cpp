@@ -16,7 +16,10 @@ DocScene* SceneHandler::getScene() const { return scene; }
 
 void SceneHandler::initConnectors() {
     connector.set(scene, this);
-    connector.connect<const QPointF&>(scene->getSceneSignals(), handlers());
+    connector.connect<const QPointF&>(
+        vector<const QPointF&>{&DocScene::doubleClick},
+        vector<const QPointF&>{&SceneHandler::onDoubleClick}
+    );
 }
 
 
@@ -71,12 +74,4 @@ void SceneHandler::onLookupReady(const QJsonObject& result) {
     if(dialog_shown == false)
         dialog.show();
     dialog_shown = true;
-}
-
-
-const vector<void (SceneHandler::*)(const QPointF&)>
-        SceneHandler::handlers() const {
-    return {
-        &SceneHandler::onDoubleClick
-    };
 }

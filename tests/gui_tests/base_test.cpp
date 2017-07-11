@@ -1,13 +1,15 @@
 #include "tests.h"
 
 
-BaseTest::BaseTest(const QString& name) {
+BaseTest::BaseTest(const QString& name, VerbosityLevel lvl) : level(lvl) {
     QUrl path(base + name);
     doc = DocPtr(
         new PDFDocument(path.path(), path.fileName())
     );
     controller = new DocHandler(doc);
-    controller->getView()->show();
+
+    if(level == VerbosityLevel::verbose)
+        controller->getView()->show();
 }
 
 

@@ -5,7 +5,7 @@ using std::shared_ptr;
 #include <QStyleFactory>
 
 #include "tests.h"
-#include "../../src/ui/dialogs.h"
+
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
@@ -13,14 +13,21 @@ int main(int argc, char** argv) {
     using TestClass = shared_ptr<QObject>;
     using Tests = vector<TestClass>;
 
+    VerbosityLevel lvl = VerbosityLevel::silent;
+
     Tests tests = {
-        TestClass(new SinglePageViewTest("/single_page.pdf")),
-        TestClass(new MultPageViewTest("/med_doc.pdf")),
-        TestClass(new SceneTest()),
+        TestClass(new SceneTest(lvl)),
+        TestClass(new SinglePageViewTest("/single_page.pdf", lvl)),
+        TestClass(new MultPageViewTest("/med_doc.pdf", lvl)),
     };
     for(TestClass test: tests)
         QTest::qExec(test.get(), QStringList());
 
-    int res = 0; //app.exec();
+    int res;
+    if(lvl == VerbosityLevel::silent)
+        res = 0;
+    else
+        res = app.exec();
+
     return res;
 }

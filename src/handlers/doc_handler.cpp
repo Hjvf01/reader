@@ -156,6 +156,8 @@ void DocHandler::start() {
 
     drawFirst();
     ui->centerOn(0, 0);
+
+    #undef DOC_SIZE
 }
 
 
@@ -194,7 +196,41 @@ void DocHandler::erasePages() {
 }
 
 
-void DocHandler::goTo(unsigned int index) {
+void DocHandler::goToNext() {
+    if(current == document.get()->amountPages() - 1)
+        return;
+
+    if(document.get()->page(current + 1)->isDrawn())
+        for(PagePtr page: pages)
+            if(page != nullptr && page->getIndex() == current + 1) {
+                ++current;
+                ui->centerOn(page);
+                return;
+            }
+
+    ++current;
+    drawNext(current);
+    ui->centerOn(pages[buf_size - 1]);
+}
+
+void DocHandler::goToPrev() {
+    if(current == 0)
+        return;
+
+    if(document.get()->page(current - 1)->isDrawn())
+        for(PagePtr page: pages)
+            if(page != nullptr && page->getIndex() == current - 1) {
+                --current;
+                ui->centerOn(page);
+                return;
+            }
+
+    --current;
+    drawPrev(current);
+    ui->centerOn(pages[0]);
+}
+
+void DocHandler::goTo(unsigned int index) {/*
     current = index;
     emit pageChange(current);
 
@@ -217,8 +253,15 @@ void DocHandler::goTo(unsigned int index) {
 
     for(PagePtr page: pages)
        if(page->getIndex() == current)
-           ui->centerOn(page);
+           ui->centerOn(page);*/
+
+    /*
+        1. Если новый индекс меньше текущего на 1, goToPrev
+        2. Если новый индекс больше текущего на 1, goToNext
+        3.
+    */
 }
+
 
 void DocHandler::handleNext(int location) {
     if(location >= DOC_PTR->page(current)->bottom()) {
@@ -245,19 +288,22 @@ void DocHandler::handlePrev(int location) {
 
 void DocHandler::initConnectors() {
     scrolling_connector = new One2One<DocView, DocHandler>(ui, this);
-    vector<void (DocHandler::*)(int)> scroll_handlers = {
-        &DocHandler::onScrollUp, &DocHandler::onScrollDown
-    };
-    scrolling_connector->connect<int>(ui->getScrollSignals(), scroll_handlers);
-
-    scroll_bar_connector = new One2One<ScrollBar, DocHandler>(
-        ui->getScroll(), this
+    scrolling_connector->connect<int>(
+        vector<void (DocView::*)(int)>{
+            &DocView::scrollUp,
+            &DocView::scrollDown
+        },
+        vector<void (DocHandler::*)(int)>{
+            &DocHandler::onScrollUp,
+            &DocHandler::onScrollDown
+        }
     );
-    vector<void (DocHandler::*)(int)> scroll_bar_handler = {
-        &DocHandler::onScrollTriggered
-    };
+
+    ScrollBar* scroll = ui->getScroll();
+    scroll_bar_connector = new One2One<ScrollBar, DocHandler>(scroll, this);
     scroll_bar_connector->connect<int>(
-        ui->getScrollBarSignals(), scroll_bar_handler
+        vector<void (ScrollBar::*)(int)>{&ScrollBar::actionTriggered},
+        vector<void (DocHandler::*)(int)>{&DocHandler::onScrollTriggered}
     );
 }
 

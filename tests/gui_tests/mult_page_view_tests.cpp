@@ -1,10 +1,17 @@
 #include "tests.h"
 
 
-MultPageViewTest::MultPageViewTest(const QString& name) : BaseTest(name) {}
+MultPageViewTest::MultPageViewTest(const QString& name, VerbosityLevel lvl)
+    : BaseTest(name, lvl) {}
 
 MultPageViewTest::~MultPageViewTest() {
     cout << "MultPage Destructor call" << endl;
+}
+
+
+void MultPageViewTest::locationLog(int loc) {
+    cout << "Current location: "
+         << loc << "\t" << getCurrentLocation(loc) << "%." << endl;
 }
 
 void MultPageViewTest::testSceneRect() { compareRect(); }
@@ -23,11 +30,25 @@ void MultPageViewTest::testScrollingDown() {
         QTest::keyClick(VIEW, Qt::Key_Down);
         QVERIFY(loc == controller->getLocation());
         vector<unsigned int> after_pages = controller->getIndexes();
-        if(prev_pages[2] != after_pages[2])
-            cout << "current location: "
-                 << getCurrentLocation(loc) << " %" << endl;
+        if(prev_pages[2] != after_pages[2]) {
+            QVERIFY(
+                prev_pages[2] == after_pages[1] &&
+                prev_pages[1] == after_pages[0]
+            );
+            locationLog(controller->getLocation());
+        }
         loc += 20;
     }
+
+    vector<unsigned int> indexes = controller->getIndexes();
+    for(unsigned int i: indexes)
+        cout << i << "\t";
+    cout << endl;
+    QVERIFY(
+        indexes[0] == doc.get()->amountPages() - 3 &&
+        indexes[1] == doc.get()->amountPages() - 2 &&
+        indexes[2] == doc.get()->amountPages() - 1
+    );
 }
 
 
@@ -41,15 +62,45 @@ void MultPageViewTest::testScrollingUp() {
                 prev_pages[0] == after_pages[1] &&
                 prev_pages[1] == after_pages[2]
             );
-            cout << controller->getLocation() << "\t"
-                 << getCurrentLocation(controller->getLocation()) << endl;
+            locationLog(controller->getLocation());
         }
+    }
+
+    vector<unsigned int> indexes = controller->getIndexes();
+    for(unsigned int i: indexes)
+        cout << i << "\t";
+    cout << endl;
+    QVERIFY(indexes[0] == 0 && indexes[1] == 1 && indexes[2] == 2);
+}
+
+
+void MultPageViewTest::testGoToNext() {
+    while(controller->getCurrentPage() != 30) {
+        vector<unsigned int> before_indexes = controller->getIndexes();
+        controller->goToNext();
+        vector<unsigned int> after_indexes = controller->getIndexes();
+        if(controller->getCurrentPage() >= 3)
+            for(size_t i = 0; i < after_indexes.size(); ++i)
+                QVERIFY(before_indexes[i] + 1 == after_indexes[i]);
     }
 }
 
 
-void MultPageViewTest::testGoToNext() {}
-void MultPageViewTest::testGoToPrev() {}
+void MultPageViewTest::testGoToPrev() {
+    vector<unsigned int> indexes = controller->getIndexes();
+    QVERIFY(indexes[0] == 28 && indexes[1] == 29 && indexes[2] == 30);
+
+    while(controller->getCurrentPage() != 3) {
+        auto before_indexes = controller->getIndexes();
+        controller->goToPrev();
+        auto after_indexes = controller->getIndexes();
+        if(controller->getCurrentPage() <= 27)
+            for(size_t i = 0; i < after_indexes.size(); ++i)
+                QVERIFY(before_indexes[i] == after_indexes[i] + 1);
+    }
+}
+
+
 void MultPageViewTest::testGoTo() {}
 
 
@@ -58,8 +109,4 @@ void MultPageViewTest::testSearch() {
     pair<QRectF, QString> result =
         DOC_PTR->page(3)->findExactOne(text_to_search);
     QVERIFY(result.second == text_to_search);
-
-    vector<pair<QRectF, QString>> results =
-        DOC_PTR->page(3)->findAll(text_to_search);
-     qDebug() << results.size();
 }

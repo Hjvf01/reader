@@ -1,7 +1,8 @@
 #include "tests.h"
 
 
-SinglePageViewTest::SinglePageViewTest(const QString& name) : BaseTest(name) {}
+SinglePageViewTest::SinglePageViewTest(const QString& name, VerbosityLevel lvl)
+    : BaseTest(name, lvl) {}
 
 SinglePageViewTest::~SinglePageViewTest() {
     cout << "SinglePage Destructor call" << endl;

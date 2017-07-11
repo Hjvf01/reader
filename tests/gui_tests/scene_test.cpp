@@ -1,7 +1,7 @@
 #include "tests.h"
 
 
-SceneTest::SceneTest() : QObject() {
+SceneTest::SceneTest(VerbosityLevel lvl) : QObject(), level(lvl) {
     QUrl path(base + "/single_page.pdf");
     doc = shared_ptr<BaseDocument>(
         new PDFDocument(path.path(), path.fileName())
@@ -14,7 +14,9 @@ SceneTest::SceneTest() : QObject() {
         0, 0, doc.get()->size()->width(), doc.get()->size()->height()
     );
     view.setScene(controller->getScene());
-    view.show();
+
+    if(level == VerbosityLevel::verbose)
+        view.show();
 }
 
 SceneTest::~SceneTest() {}
