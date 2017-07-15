@@ -14,11 +14,13 @@ DocScene::~DocScene() {
     if(select_box != nullptr)
         removeItem(select_box);
     delete select_box;
+
     for(auto p: select_boxes)
         if(p != nullptr)
             removeItem(p);
      for(auto p: select_boxes)
         delete p;
+     select_boxes.clear();
 }
 
 

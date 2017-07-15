@@ -5,7 +5,7 @@
 #include "handlers.h"
 
 
-DocHandler::DocHandler(DocPtr doc) : QObject() {
+DocHandler::DocHandler(const DocPtr& doc) : QObject() {
     #define DOC_PTR document.get()
     /*
         1. Размер буфера страниц
@@ -32,8 +32,12 @@ DocHandler::DocHandler(DocPtr doc) : QObject() {
 }
 
 DocHandler::~DocHandler() {
-    delete scrolling_connector;
-    delete scroll_bar_connector;
+    for(PagePtr page: pages) {
+        if(page != nullptr)
+            handler->getScene()->removeItem(page);
+        delete page;
+    }
+    pages.clear();
 
     delete ui;
     delete handler;
@@ -43,6 +47,7 @@ DocHandler::~DocHandler() {
 unsigned int DocHandler::getCurrentPage() const { return current; }
 int DocHandler::getLocation() const { return location; }
 DocView* DocHandler::getView() const { return ui; }
+SceneHandler* DocHandler::getSceneHandler() const { return handler; }
 
 
 void DocHandler::resize(int new_value) {
@@ -167,7 +172,7 @@ void DocHandler::fillBuffer(const vector<Index>& indexes) {
 }
 
 
-vector<unsigned int> DocHandler::getIndexes() {
+vector<unsigned int> DocHandler::getIndexes() const {
     vector<Index> res;
     for(PagePtr page: pages)
         if(page != nullptr)
@@ -204,13 +209,15 @@ void DocHandler::goToNext() {
         for(PagePtr page: pages)
             if(page != nullptr && page->getIndex() == current + 1) {
                 ++current;
-                ui->centerOn(page);
+                emit pageChange(current);
+                centerOnCurrentPage();
                 return;
             }
 
     ++current;
+    emit pageChange(current);
     drawNext(current);
-    ui->centerOn(pages[buf_size - 1]);
+    centerOnCurrentPage();
 }
 
 void DocHandler::goToPrev() {
@@ -221,45 +228,53 @@ void DocHandler::goToPrev() {
         for(PagePtr page: pages)
             if(page != nullptr && page->getIndex() == current - 1) {
                 --current;
-                ui->centerOn(page);
+                emit pageChange(current);
+                centerOnCurrentPage();
                 return;
             }
 
     --current;
+    emit pageChange(current);
     drawPrev(current);
-    ui->centerOn(pages[0]);
+    centerOnCurrentPage();
 }
 
-void DocHandler::goTo(unsigned int index) {/*
-    current = index;
-    emit pageChange(current);
-
-    if(DOC_PTR->amountPages() < buf_size) {
-        ui->centerOn(pages[current]);
-        return;
-    }
-
-    erasePages();
-
-    Index last = DOC_PTR->amountPages() - 1;
-    Index len = DOC_PTR->amountPages();
-
-    if(index + buf_size < last)
-        for(Index i = index; i < index + buf_size; i++)
-            drawNext(i);
-    else
-        for(Index i = last - buf_size; i < len; i++)
-            drawNext(i);
-
-    for(PagePtr page: pages)
-       if(page->getIndex() == current)
-           ui->centerOn(page);*/
-
+void DocHandler::goTo(unsigned int index) {
     /*
         1. Если новый индекс меньше текущего на 1, goToPrev
         2. Если новый индекс больше текущего на 1, goToNext
-        3.
+        3. Иначе перерисовать страницы.
     */
+    if(index == current - 1) return goToPrev();
+    if(index == current + 1) return goToNext();
+
+    current = index;
+    if(document.get()->amountPages() < buf_size) {
+        centerOnCurrentPage();
+        return;
+    }
+
+    unsigned int len = document.get()->amountPages();
+    unsigned int last = len - 1;
+
+    erasePages();
+    if(index + buf_size < last)
+        for(unsigned int i = index; i < index + buf_size; ++i)
+            drawNext(i);
+    else
+        for(unsigned int i = last - buf_size; i < len; i++)
+            drawNext(i);
+    centerOnCurrentPage();
+}
+
+
+void DocHandler::centerOnCurrentPage() const {
+    for(PagePtr page: pages)
+        if(page->getIndex() == current)
+            ui->centerOn(
+                document.get()->page(current)->actualWidth() / 2,
+                document.get()->page(current)->topY()
+            );
 }
 
 
@@ -287,8 +302,8 @@ void DocHandler::handlePrev(int location) {
 
 
 void DocHandler::initConnectors() {
-    scrolling_connector = new One2One<DocView, DocHandler>(ui, this);
-    scrolling_connector->connect<int>(
+    scrolling_connector.set(ui, this);
+    scrolling_connector.connect<int>(
         vector<void (DocView::*)(int)>{
             &DocView::scrollUp,
             &DocView::scrollDown
@@ -299,9 +314,8 @@ void DocHandler::initConnectors() {
         }
     );
 
-    ScrollBar* scroll = ui->getScroll();
-    scroll_bar_connector = new One2One<ScrollBar, DocHandler>(scroll, this);
-    scroll_bar_connector->connect<int>(
+    scroll_bar_connector.set(ui->getScroll(), this);
+    scroll_bar_connector.connect<int>(
         vector<void (ScrollBar::*)(int)>{&ScrollBar::actionTriggered},
         vector<void (DocHandler::*)(int)>{&DocHandler::onScrollTriggered}
     );

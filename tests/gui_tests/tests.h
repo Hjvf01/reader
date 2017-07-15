@@ -38,6 +38,25 @@ enum class VerbosityLevel {
 };
 
 
+class SceneTest : public QObject {
+    Q_OBJECT
+
+    SceneHandler* controller;
+    shared_ptr<BaseDocument> doc;
+    QGraphicsView view;
+    VerbosityLevel level;
+
+    One2One<DocScene, SceneHandler>* connector;
+
+public:
+    SceneTest(VerbosityLevel lvl=VerbosityLevel::silent);
+    ~SceneTest() override;
+
+private slots:
+    void testDbClick(void);
+};
+
+
 using DocPtr = shared_ptr<BaseDocument>;
 class BaseTest : public QObject {
     Q_OBJECT
@@ -96,23 +115,27 @@ private slots:
     void testGoToPrev(void);
     void testGoTo(void);
     void testSearch(void);
+
+    void testResize(void);
 };
 
 
-class SceneTest : public QObject {
+class BaseDocWidgetTest : public QObject {
     Q_OBJECT
 
-    SceneHandler* controller;
-    shared_ptr<BaseDocument> doc;
-    QGraphicsView view;
-    VerbosityLevel level;
-
-    One2One<DocScene, SceneHandler>* connector;
+protected:
+    DocWidgetHandler* controller;
 
 public:
-    SceneTest(VerbosityLevel lvl=VerbosityLevel::silent);
-    ~SceneTest() override;
+    BaseDocWidgetTest(const QString& name, VerbosityLevel lvl);
+    virtual ~BaseDocWidgetTest();
+};
 
-private slots:
-    void testDbClick(void);
+
+class SingleDocWidgetTest : public BaseDocWidgetTest {
+    Q_OBJECT
+
+public:
+    SingleDocWidgetTest(const QString& name, VerbosityLevel lvl);
+    ~SingleDocWidgetTest() override;
 };

@@ -18,17 +18,20 @@ DocWidget::DocWidget(QWidget *parent) : QMainWindow(parent) {
     setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
-//DocView* DocWidget::getView() const { return view; }
 DocToolBar* DocWidget::getToolBar() const { return tool_bar; }
 
-QAction* DocWidget::getFindAction() const { return context_menu[0]; }
-QAction* DocWidget::getFirstPage()  const { return context_menu[2]; }
-QAction* DocWidget::getPrevPage()   const { return context_menu[3]; }
-QAction* DocWidget::getNextPage()   const { return context_menu[4]; }
-QAction* DocWidget::getLastPage()   const { return context_menu[5]; }
-QAction* DocWidget::getZoomIn()     const { return context_menu[7]; }
-QAction* DocWidget::getZoomOut()    const { return context_menu[8]; }
-QAction* DocWidget::getFullScreen() const { return context_menu[10]; }
+unsigned int DocWidget::getContextMenuSize() const {
+    return context_menu.size() - 3;
+}
+
+const vector<QAction*> DocWidget::getContextMenu() const {
+    vector<QAction*> context;
+    unsigned int len = context_menu.size();
+    for(unsigned int i = 0; i < len; i++)
+        if(i != 1 || i != 6 || i != 9)
+            context.push_back(context_menu[i]);
+    return context;
+}
 
 
 void DocWidget::setLeftDock(QWidget *widget) {

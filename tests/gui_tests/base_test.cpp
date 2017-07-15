@@ -8,8 +8,10 @@ BaseTest::BaseTest(const QString& name, VerbosityLevel lvl) : level(lvl) {
     );
     controller = new DocHandler(doc);
 
-    if(level == VerbosityLevel::verbose)
+    if(level == VerbosityLevel::verbose) {
+        controller->getView()->setWindowTitle(path.path());
         controller->getView()->show();
+    }
 }
 
 

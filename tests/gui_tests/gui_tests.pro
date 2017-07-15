@@ -38,7 +38,9 @@ SOURCES += main.cpp\
     mult_page_view_tests.cpp \
     single_page_viewe_test.cpp \
     base_test.cpp \
-    scene_test.cpp
+    scene_test.cpp \
+    base_doc_widget_test.cpp \
+    single_doc_widget_test.cpp
 
 HEADERS +=\
     ../../src/handlers/handlers.h\
@@ -52,3 +54,6 @@ HEADERS +=\
 CONFIG += debug
 
 QMAKE_CXX += -O1
+
+
+RESOURCES = reader.qrc

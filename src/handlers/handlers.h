@@ -8,6 +8,10 @@ using std::make_shared;
 using std::deque;
 #include <string>
 using std::string;
+#include <algorithm>
+using std::move;
+using std::forward;
+
 
 #include "../ui/ui.h"
 #include "../model/models.h"
@@ -29,7 +33,7 @@ using DocPtr = shared_ptr<BaseDocument>;
 class SceneHandler : public QObject {
     Q_OBJECT
 
-    static DoubleClickMode dbclick_mode = DoubleClickMode::translate;
+    static DoubleClickMode dbclick_mode;
 
 
     string lang_from;
@@ -57,26 +61,26 @@ signals:
     void translate(const QString&);
     void lookup(const QString&);
 
-public slots:
+private slots:
     void onDoubleClick(const QPointF& point);
     void onError(const QString& error_msg);
     void onTranslateReady(const QJsonObject& result);
     void onLookupReady(const QJsonObject& result);
 
 private:
-    bool pointBeyondScene(const QPointF& point);
+    bool pointBeyondScene(const QPointF& point) const;
     void initConnectors(void);
-    void emitter(const QString& text, const QRectF& box);
+    void emitter(const QRectF& box, const QString& text);
 };
 
 
 class DocHandler : public QObject {
     Q_OBJECT
 
-    using Index = unsigned int;
     using PagePtr = PageView*;
 
-    static const Index buf_size = 3;
+    static const unsigned int buf_size = 3;
+
     DocView* ui;
     Index current;
     deque<PagePtr> pages;
@@ -85,27 +89,27 @@ class DocHandler : public QObject {
     double scale_factor;
     SceneHandler* handler;
 
-    One2One<DocView, DocHandler>* scrolling_connector;
-    One2One<ScrollBar, DocHandler>* scroll_bar_connector;
+    One2One<DocView, DocHandler> scrolling_connector;
+    One2One<ScrollBar, DocHandler> scroll_bar_connector;
 
 public:
-    DocHandler(DocPtr doc);
+    DocHandler(const DocPtr& doc);
     ~DocHandler() override;
 
     unsigned int getCurrentPage(void) const;
     int getLocation(void) const;
-
     DocView* getView(void) const;
+    SceneHandler* getSceneHandler(void) const;
 
     void resize(int new_value);
 
-    vector<Index> getIndexes(void);
+    vector<Index> getIndexes(void) const;
 
     void goToNext(void);
     void goToPrev(void);
     void goTo(unsigned int index);
 
-public slots:
+private slots:
     void onScrollUp(int step);
     void onScrollDown(int step);
     void onScrollTriggered(int action);
@@ -127,6 +131,8 @@ private:
     void erasePages();
 
     void initConnectors(void);
+    void centerOnCurrentPage(void) const;
+
 signals:
     void pageChange(unsigned int index);
 };
@@ -138,43 +144,28 @@ class DocWidgetHandler : public QObject {
     using Parametr = QPair<QString, QString>;
     using Parametrs = QList<Parametr>;
 
-    DocWidget* ui;       // не владеет
-    DocHandler* handler; // не владеет
-
-    QTreeView* table_of_content; //владеет
+    DocWidget* ui;
+    DocHandler* handler;
 
     TrWorker trnsl;
     DictWorker dict;
-
     FindText dialog;
+
+    Many2One<QAction, DocWidgetHandler> context_menu_connector;
+    Many2One<QComboBox, DocWidgetHandler> combo_box_connector;
+    Many2One<QAction, DocWidgetHandler> tool_bar_connector;
 
     QMap<QString, QStringList> dict_langs;
 
-    QString from_tr_lang;
-    QString to_tr_lang;
-    QString from_dict_lang;
-    QString to_dict_lang;
-
-    QStandardItemModel* toc;
-
 public:
-    DocWidgetHandler(DocWidget* ui, DocHandler* h);
+    DocWidgetHandler(const QUrl& path);
     ~DocWidgetHandler() override;
 
     DocWidget* getWidget(void) const;
+    DocHandler* getHandler(void) const;
 
 private:
-    void scaleMenuConnector(void);
-    void translatorMenuConnector(void);
-    void pageNavConnector(void);
-
-    void docHandlerConnector(void);
-    void contextMenuConnector(void);
-    void translatorConnector(void);
-
-
-    void toolBarConnectors(void);
-    void widgetConnectors(void);
+    void initConnectors(void);
 
 signals:
     void translate(const QString& text, const Parametrs& parametrs);
@@ -186,8 +177,8 @@ signals:
 public slots:
     void onAbsoluteScaleChanged(const QString& value);
 
-    void onZoomIn(void);
-    void onZoomOut(void);
+    void onZoomIn(bool);
+    void onZoomOut(bool);
 
     void onTrFromChanged(const QString& lang_name);
     void onTrToChanged(const QString& lang_name);
@@ -200,7 +191,6 @@ public slots:
 
     void onPageChange(unsigned int index);
 
-    void onTOCActivated(const QModelIndex& index);
     void onChangePage(const QString& page);
 
     void onNextPage(bool);
@@ -208,9 +198,10 @@ public slots:
     void onLastPage(bool);
     void onFirstPage(bool);
     void onFullScreen(bool);
+    void onEmpty(bool) {}
 
     void onFind(const QString& text);
-    void onFindDialogShow(void);
+    void onFindDialogShow(bool);
     void onFindDialogClose(void);
 
     void onReload(bool);
@@ -247,7 +238,7 @@ public:
     MainHandler(MainWindow* window);
     ~MainHandler();
 
-    void open(QList<QUrl> files);
+    void open(const QList<QUrl>& files);
     void close(int index);
 
     vector<void (MainHandler::*)(void)> getMenuHandlers(void);

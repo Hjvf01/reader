@@ -85,7 +85,7 @@ public:
 
 
     ~One2One() override {
-        disconnect();
+        //disconnect();
     }
 };
 
@@ -156,7 +156,7 @@ public:
 
 
     ~One2Many() override {
-        disconnect();
+        //disconnect();
     }
 };
 
@@ -240,7 +240,7 @@ public:
     }
 
     ~Many2Many() override {
-        disconnect();
+        //disconnect();
     }
 };
 
@@ -310,7 +310,7 @@ public:
 
 
     ~Many2One() override {
-        disconnect();
+        //disconnect();
     }
 };
 

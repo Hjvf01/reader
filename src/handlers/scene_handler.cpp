@@ -1,6 +1,9 @@
 #include "handlers.h"
 
 
+DoubleClickMode SceneHandler::dbclick_mode = DoubleClickMode::translate;
+
+
 SceneHandler::SceneHandler(DocPtr doc) : QObject() {
     scene = new DocScene;
     document = doc;
@@ -8,7 +11,9 @@ SceneHandler::SceneHandler(DocPtr doc) : QObject() {
     initConnectors();
 }
 
-SceneHandler::~SceneHandler() { /* Сцена удалится автоматически */ }
+SceneHandler::~SceneHandler() {
+    /* Сцена удалится автоматически */
+}
 
 
 DocScene* SceneHandler::getScene() const { return scene; }
@@ -17,13 +22,17 @@ DocScene* SceneHandler::getScene() const { return scene; }
 void SceneHandler::initConnectors() {
     connector.set(scene, this);
     connector.connect<const QPointF&>(
-        vector<const QPointF&>{&DocScene::doubleClick},
-        vector<const QPointF&>{&SceneHandler::onDoubleClick}
+        vector<void (DocScene::*)(const QPointF&)>{
+            &DocScene::doubleClick
+        },
+        vector<void (SceneHandler::*)(const QPointF&)>{
+            &SceneHandler::onDoubleClick
+        }
     );
 }
 
 
-bool SceneHandler::pointBeyondScene(const QPointF &point) {
+bool SceneHandler::pointBeyondScene(const QPointF &point) const {
     return (
         (point.x() > scene->sceneRect().width()) ||
         (point.y() > scene->sceneRect().height()) ||
@@ -41,16 +50,15 @@ void SceneHandler::onDoubleClick(const QPointF& point) {
     for(QGraphicsItem* item: items) {
         if(item->contains(point)) {
             PageView* page = dynamic_cast<PageView*>(item);
-            if(page == nullptr) continue;
+            if(page == nullptr)
+                continue;
+
             pair<QRectF, QString> word_box =
                 document.get()->page(page->getIndex())->getTextBox(point);
             if(word_box.first.width() == 0 && word_box.first.height() == 0)
                 return;
             scene->setHightLight(word_box.first);
-
-            emit translate(word_box.second);
-            emit lookup(word_box.second);
-
+            emitter(word_box.first, word_box.second);
             dialog.setWindowTitle(word_box.second);
             return;
         }
@@ -74,4 +82,23 @@ void SceneHandler::onLookupReady(const QJsonObject& result) {
     if(dialog_shown == false)
         dialog.show();
     dialog_shown = true;
+}
+
+
+void SceneHandler::emitter(const QRectF &box, const QString& text) {
+    switch(SceneHandler::dbclick_mode) {
+        case DoubleClickMode::hightlight:
+            break;
+        case DoubleClickMode::underline:
+            break;
+        case DoubleClickMode::dashed:
+            break;
+        case DoubleClickMode::translate:
+            emit translate(text);
+            emit lookup(text);
+            return;
+        case DoubleClickMode::clipboard:
+            break;
+        default: return;
+    }
 }

@@ -20,7 +20,7 @@ MainHandler::~MainHandler() {
 }
 
 
-void MainHandler::open(QList<QUrl> files) {
+void MainHandler::open(const QList<QUrl>& files) {
     for(QUrl path: files) {
         createDocWidget(path);
         assert(
@@ -82,14 +82,15 @@ void MainHandler::createDocWidget(QUrl path) {
     DocHandler* doc_handler = new DocHandler(
         doc
     );
+    /*
     DocWidgetHandler* handler = new DocWidgetHandler(
         widget, doc_handler
-    );
+    );*/
 
     widgets.push_back(widget);
     //documents.push_back(doc);
     doc_handlers.push_back(doc_handler);
-    handlers.push_back(handler);
+    //handlers.push_back(handler);
 
     ui->getCentral()->addTab(widget, doc->getName());
     amount++;
@@ -212,7 +213,7 @@ void MainHandler::onZoomIn(bool) {
     if(index == -1)
         return;
     else
-        doc_handlers[index]->resize(0.1);
+        doc_handlers[index]->resize(110);
 }
 
 void MainHandler::onZoomOut(bool) {
@@ -221,7 +222,7 @@ void MainHandler::onZoomOut(bool) {
     if(index == -1)
         return;
      else
-        doc_handlers[index]->resize(-0.1);
+        doc_handlers[index]->resize(90);
 }
 
 void MainHandler::onNextPage(bool) {

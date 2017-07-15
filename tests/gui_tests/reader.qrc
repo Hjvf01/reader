@@ -1,0 +1,25 @@
+<!DOCTYPE RCC><RCC version="1.0">
+
+<qresource>
+    <file alias="file.png">../../icons/file_menu/file.png</file>
+    <file alias="print.png">../../icons/file_menu/print.png</file>
+    <file alias="property.png">../../icons/file_menu/property.png</file>
+    <file alias="close.png">../../icons/file_menu/close.png</file>
+    <file alias="quit.png">../../icons/file_menu/quit.png</file>
+
+    <file alias="last_page.png">../../icons/view_menu/lst_page.png</file>
+    <file alias="first_page.png">../../icons/view_menu/fst_page.png</file>
+    <file alias="prev_page.png">../../icons/view_menu/prev_page.png</file>
+    <file alias="next_page.png">../../icons/view_menu/next_page.png</file>
+    <file alias="zoom_in.png">../../icons/view_menu/zoom_in.png</file>
+    <file alias="zoom_out.png">../../icons/view_menu/zoom_out.png</file>
+    <file alias="find.png">../../icons/view_menu/search.png</file>
+    <file alias="fullscreen.png">../../icons/view_menu/fullscreen.png</file>
+
+    <file alias="translator.png">../../icons/tools_menu/translate.png</file>
+    <file alias="tr_separator.png">../../icons/tools_menu/forward.png</file>
+    <file alias="page.png">../../icons/tools_menu/page.png</file>
+    <file alias="reload.png">../../icons/tools_menu/refresh.png</file>
+</qresource>
+
+</RCC>

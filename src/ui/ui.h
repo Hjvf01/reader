@@ -152,22 +152,14 @@ public:
     ~DocToolBar() override;
 
     QComboBox* getScaleBox(void) const;
-    QComboBox* getTrFrom(void)   const;
-    QComboBox* getTrTo(void)     const;
+    QComboBox* getTrTo(void) const;
+    QComboBox* getTrFrom(void) const;
 
-    QAction* getZoomIn(void)  const;
-    QAction* getZoomOut(void) const;
+    vector<QComboBox*> getComboBoxes(void) const;
+    vector<QAction*> getActions(void) const;
 
-    QAction* getReload(void) const;
-
-    QAction* getFstPage(void)  const;
-    QAction* getPrevPage(void) const;
-    QAction* getNextPage(void) const;
-    QAction* getLastPage(void) const;
-    QAction* getFind(void)     const;
-
-    QLineEdit* getCurrentPage(void);
-    QLabel* getPageLbl(void);
+    unsigned int getComboBoxesAmount(void) const;
+    unsigned int getActionsAmount(void) const;
 
     void setPageNums(const QString current, const QString last);
     void setCurrentPage(const QString num);
@@ -180,6 +172,9 @@ private:
 signals:
     void setPage(void);
 };
+
+
+class DocumentMenu : public QDockWidget {};
 
 
 class DocWidget : public QMainWindow {
@@ -236,17 +231,9 @@ public:
     DocWidget(QWidget* parent=nullptr);
     ~DocWidget() override;
 
-    DocView* getView(void) const;
     DocToolBar* getToolBar(void) const;
-
-    QAction* getFindAction(void) const;
-    QAction* getFirstPage(void) const;
-    QAction* getPrevPage(void) const;
-    QAction* getNextPage(void) const;
-    QAction* getLastPage(void) const;
-    QAction* getZoomIn(void) const;
-    QAction* getZoomOut(void) const;
-    QAction* getFullScreen(void) const;
+    const vector<QAction*> getContextMenu(void) const;
+    unsigned int getContextMenuSize(void) const;
 
     void setLeftDock(QWidget* widget);
 };
