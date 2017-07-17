@@ -50,7 +50,7 @@ public:
 
 signals:
     /* если что-то пойдет не так*/
-    void errorSignal(QString msg);
+    void errorSignal(const QString& msg);
 };
 
 
@@ -125,7 +125,8 @@ private slots:
                 emit errorSignal("Internet disconnected");
             else
                 qDebug() << "Undefined";
-        } else qDebug() << error.errorString();
+        } else
+            qDebug() << error.errorString();
 
         reply->close();
         delete reply;
@@ -133,8 +134,8 @@ private slots:
     }
 
 signals:
-    void getLangsReady(const QJsonObject result);
-    void translateReady(const QJsonObject result);
+    void getLangsReady(const QJsonObject& result);
+    void translateReady(const QJsonObject& result);
 };
 
 
@@ -170,7 +171,7 @@ public slots:
         manager.get(request);
     }
 
-    void onLookup(const QString txt, Prms prms) {
+    void onLookup(const QString& txt, const Prms& prms) {
         /*
                 Метод вернет список частей речи которые может принимать перевод
                 целевого языка. Также список примеров перевода.
@@ -216,8 +217,18 @@ private slots:
     }
 
 signals:
-    void getLangsReady(const QJsonArray langs);
-    void lookupReady(const QJsonObject result);
+    void getLangsReady(const QJsonArray& langs);
+    void lookupReady(const QJsonObject& result);
+};
+
+
+
+class YandexWorker : public BaseWebWorker {
+    static const QString TR_KEY;
+    static const QString DICT_KEY;
+
+    static const QString TR_URL;
+    static const QString DICT_URL;
 };
 
 #endif // NETWORK_H

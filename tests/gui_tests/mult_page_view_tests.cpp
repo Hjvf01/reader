@@ -168,15 +168,6 @@ void MultPageViewTest::testSearch() {
 void MultPageViewTest::testResize() {
     #define SCENE_RECT controller->getView()->scene()->sceneRect()
 
-    function<bool(const QRectF&, const QRectF&, double)> almostEqual =
-        [](const QRectF& before, const QRectF& after, double coef) -> bool {
-        const double EPSILON = 0.01;
-        return (
-            (abs(after.width() / before.width() - coef) < EPSILON) &&
-            (abs(after.height() / before.height() - coef) < EPSILON)
-        );
-    };
-
     vector<unsigned int> indexes = controller->getIndexes();
     QVERIFY(indexes[0] == 0 && indexes[1] == 1 && indexes[2] == 2);
 

@@ -36,11 +36,12 @@ SOURCES += main.cpp\
     ../../src/model/pdf_document.cpp\
     #
     mult_page_view_tests.cpp \
-    single_page_viewe_test.cpp \
     base_test.cpp \
     scene_test.cpp \
     base_doc_widget_test.cpp \
-    single_doc_widget_test.cpp
+    single_doc_widget_test.cpp \
+    single_page_view_test.cpp \
+    mult_page_widget_test.cpp
 
 HEADERS +=\
     ../../src/handlers/handlers.h\

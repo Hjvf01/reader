@@ -11,24 +11,27 @@ int main(int argc, char** argv) {
     QApplication app(argc, argv);
     QApplication::setStyle(QStyleFactory::create("Fusion"));
 
+    using TestPtr = shared_ptr<QObject>;
+    using Tests = vector<TestPtr>;
+
     VerbosityLevel lvl = VerbosityLevel::verbose;
 
-    vector<QObject*> tests = {
-        new SceneTest(lvl),
-        new SinglePageViewTest("/single_page.pdf", lvl),
-        new MultPageViewTest("/med_doc.pdf", lvl),
-        new SingleDocWidgetTest("/single_page.pdf", lvl)
+    const Tests tests = {
+        TestPtr(new SceneTest(lvl)),
+        TestPtr(new SinglePageViewTest("/single_page.pdf", lvl)),
+        TestPtr(new MultPageViewTest("/med_doc.pdf", lvl)),
+        TestPtr(new SingleDocWidgetTest("/single_page.pdf", lvl)),
+        TestPtr(new MultDocWidgetTest("/huge_doc.pdf", lvl)),
     };
-    for(QObject* test: tests)
-        QTest::qExec(test, QStringList());
+
+    for(TestPtr test: tests)
+        QTest::qExec(test.get(), QStringList());
 
     int res;
     if(lvl == VerbosityLevel::silent)
         res = 0;
     else
         res = app.exec();
-
-    for(QObject* test: tests) delete test;
 
     return res;
 }

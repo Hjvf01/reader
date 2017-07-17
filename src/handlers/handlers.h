@@ -20,7 +20,7 @@ using std::forward;
 #include "../connectors/connectors.h"
 
 
-enum class DoubleClickMode {
+enum class SelectMode {
     hightlight = 0,
     underline  = 1,
     dashed     = 2,
@@ -33,11 +33,13 @@ using DocPtr = shared_ptr<BaseDocument>;
 class SceneHandler : public QObject {
     Q_OBJECT
 
-    static DoubleClickMode dbclick_mode;
+    using Parametr = QPair<QString, QString>;
+    using Parametrs = QList<Parametr>;
 
+    static SelectMode select_mode;
 
-    string lang_from;
-    string lang_to;
+    QString lang_from;
+    QString lang_to;
 
     DocScene* scene;
     DocPtr document;
@@ -47,19 +49,23 @@ class SceneHandler : public QObject {
     One2One<DocScene, SceneHandler> connector;
 
 public:
-    SceneHandler(DocPtr doc);
+    SceneHandler(const DocPtr& doc);
     ~SceneHandler() override;
 
     DocScene* getScene(void) const;
 
-    static void setDoubleClickMode(const DoubleClickMode& mode);
+    static void setDoubleClickMode(const SelectMode& mode);
 
     void setLangFrom(const QString& lang);
     void setLangTo(const QString& lang);
 
 signals:
-    void translate(const QString&);
-    void lookup(const QString&);
+    void translate(const QString&, const Parametrs&);
+    void lookup(const QString&, const Parametrs&);
+    void drawFillRect(const QRectF&);
+    void drawSolidLine(const QRectF&);
+    void drawDashedLine(const QRectF&);
+    void copyToClipboard(const QString&);
 
 private slots:
     void onDoubleClick(const QPointF& point);
@@ -138,6 +144,9 @@ signals:
 };
 
 
+class DocMenuHandler : public QObject {};
+
+
 class DocWidgetHandler : public QObject {
     Q_OBJECT
 
@@ -147,13 +156,15 @@ class DocWidgetHandler : public QObject {
     DocWidget* ui;
     DocHandler* handler;
 
-    TrWorker trnsl;
-    DictWorker dict;
+    DocPtr document;
+
+    YandexWorker trnsl;
     FindText dialog;
 
     Many2One<QAction, DocWidgetHandler> context_menu_connector;
     Many2One<QComboBox, DocWidgetHandler> combo_box_connector;
     Many2One<QAction, DocWidgetHandler> tool_bar_connector;
+    One2One<SceneHandler, YandexWorker> trnsl_connector;
 
     QMap<QString, QStringList> dict_langs;
 
@@ -174,17 +185,11 @@ signals:
     void getTrLangs(void);
     void getDictLangs(void);
 
-public slots:
+private slots:
     void onAbsoluteScaleChanged(const QString& value);
-
-    void onZoomIn(bool);
-    void onZoomOut(bool);
 
     void onTrFromChanged(const QString& lang_name);
     void onTrToChanged(const QString& lang_name);
-
-    void onTranslate(const QString& text);
-    void onLookup(const QString& text);
 
     void onDictLangsReady(const QJsonArray& langs);
     void onError(const QString& error_msg);
@@ -193,12 +198,13 @@ public slots:
 
     void onChangePage(const QString& page);
 
+    void onZoomIn(bool);
+    void onZoomOut(bool);
     void onNextPage(bool);
     void onPrevPage(bool);
     void onLastPage(bool);
     void onFirstPage(bool);
     void onFullScreen(bool);
-    void onEmpty(bool) {}
 
     void onFind(const QString& text);
     void onFindDialogShow(bool);

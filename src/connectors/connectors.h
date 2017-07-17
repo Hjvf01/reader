@@ -258,6 +258,7 @@ public:
 
     Many2One(const vector<Sender*>& senders, Receiver* receiver) {
         this->receiver = receiver;
+
         for(Sender* sender: senders)
             this->senders.push_back(sender);
     }
@@ -266,8 +267,14 @@ public:
     void set(const vector<Sender*>& senders, Receiver* receiver) {
         if(this->receiver == nullptr && this->senders.size() == 0) {
             this->receiver = receiver;
-            for(Sender* sender: senders) this->senders.push_back(sender);
+
+            for(Sender* sender: senders)
+                this->senders.push_back(sender);
+
+            assert(this->senders.size() == senders.size());
         }
+        else
+            assert(this->senders.size() == 0);
     }
 
 
@@ -280,10 +287,11 @@ public:
         assert(_signals.size() == senders.size());
 
         Index len = _signals.size();
-        for(Index i = 0; i < len; i++)
+        for(Index i = 0; i < len; i++) {
             QObject::connect(
                 senders[i], _signals[i], receiver, _slots[i], type
             );
+        }
     }
 
 

@@ -103,9 +103,6 @@ public:
     ScrollBar* getScroll(void) const;
     DocScene* getScene(void) const;
 
-    const vector<void (DocView::*)(int)> getScrollSignals(void) const;
-    const vector<void (ScrollBar::*)(int)> getScrollBarSignals(void) const;
-
 signals:
     void scrollUp(int step);
     void scrollDown(int step);
@@ -185,7 +182,6 @@ class DocWidget : public QMainWindow {
     using Icons = vector<QIcon>;
 
     DocToolBar* tool_bar = new DocToolBar;
-    QDockWidget* left_dock = new QDockWidget;
 
     const Actions context_menu = {
         new QAction("Find"),                //0

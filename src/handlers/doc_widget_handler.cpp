@@ -2,11 +2,12 @@
 
 
 DocWidgetHandler::DocWidgetHandler(const QUrl& path) : QObject() {
-    handler = new DocHandler(DocPtr(
-        new PDFDocument(path.path(), path.fileName())
-    ));
+    document = DocPtr(new PDFDocument(path.path(), path.fileName()));
+    handler = new DocHandler(document);
     ui = new DocWidget;
     ui->setCentralWidget(handler->getView());
+
+    initConnectors();
 }
 
 DocWidgetHandler::~DocWidgetHandler() {
@@ -60,14 +61,10 @@ void DocWidgetHandler::initConnectors() {
             &QAction::triggered
         },
         vector<void (DocWidgetHandler::*)(bool)>{
-            &DocWidgetHandler::onZoomIn,
-            &DocWidgetHandler::onZoomOut,
-            &DocWidgetHandler::onReload,
-            &DocWidgetHandler::onFirstPage,
-            &DocWidgetHandler::onPrevPage,
-            &DocWidgetHandler::onNextPage,
-            &DocWidgetHandler::onLastPage,
-            &DocWidgetHandler::onFindDialogShow,
+            &DocWidgetHandler::onZoomIn, &DocWidgetHandler::onZoomOut,
+            &DocWidgetHandler::onReload, &DocWidgetHandler::onFirstPage,
+            &DocWidgetHandler::onPrevPage, &DocWidgetHandler::onNextPage,
+            &DocWidgetHandler::onLastPage, &DocWidgetHandler::onFindDialogShow,
         }
     );
 }
@@ -105,28 +102,15 @@ void DocWidgetHandler::onTrFromChanged(const QString& lang_name) {
     for(int i = 0; i < count; i++)
         tr_to_box->removeItem(i);
     tr_to_box->addItems(dict_langs[lang_name]);
+
+    handler->getSceneHandler()->setLangFrom(lang_name);
 }
 
 void DocWidgetHandler::onTrToChanged(const QString& lang_name) {
     /* устанавливает целевой язык */
+    handler->getSceneHandler()->setLangTo(lang_name);
 }
 
-void DocWidgetHandler::onTranslate(const QString& text) {
-    /* формирует запрос перевода слова
-    emit translate(text, {
-        Parametr("lang", from_tr_lang + "-" + to_tr_lang)
-    });
-    */
-}
-
-void DocWidgetHandler::onLookup(const QString& text) {
-    /* формирует запрос поиска в словаре
-    emit lookup(text, {
-        Parametr("lang", from_dict_lang + "-" + to_dict_lang),
-        Parametr("ui", to_dict_lang)
-    });
-    */
-}
 
 void DocWidgetHandler::onError(const QString& error_msg) {
     qDebug() << error_msg;
@@ -177,26 +161,33 @@ void DocWidgetHandler::onChangePage(const QString &page) {
 
 void DocWidgetHandler::onNextPage(bool) {
     unsigned int i = handler->getCurrentPage();
-    //if(i == handler->getDoc()->amountPages() - 1) return;
     handler->goTo(i + 1);
 }
 
 void DocWidgetHandler::onPrevPage(bool) {
     unsigned int i = handler->getCurrentPage();
-    if(i == 0) return;
+    if(i == 0)
+        return;
     onChangePage(QString::number(i));
 }
 
 void DocWidgetHandler::onFirstPage(bool) {
-    //if(handler->getDoc()->amountPages() == 1)
+    if(document.get()->amountPages() == 1)
         return;
+    if(handler->getCurrentPage() == 0)
+        return;
+
     handler->goTo(0);
 }
 
 void DocWidgetHandler::onLastPage(bool) {
-    //if(handler->getDoc()->amountPages() == 1)
+    unsigned int last = document.get()->amountPages() - 1;
+    if(document.get()->amountPages() == 1)
         return;
-    //handler->goTo(handler->getDoc()->amountPages() - 1);
+    if(handler->getCurrentPage() == last)
+        return;
+
+    handler->goTo(last);
 }
 
 void DocWidgetHandler::onFullScreen(bool) {}

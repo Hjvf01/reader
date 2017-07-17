@@ -68,9 +68,7 @@ void DocHandler::resize(int new_value) {
 
     fillBuffer(indexes);
 
-    for(PagePtr page: pages)
-        if(page != nullptr && page->getIndex() == current)
-            ui->centerOn(page);
+    centerOnCurrentPage();
 }
 
 void DocHandler::eraseFront(Index index) {
@@ -270,9 +268,9 @@ void DocHandler::goTo(unsigned int index) {
 
 void DocHandler::centerOnCurrentPage() const {
     for(PagePtr page: pages)
-        if(page->getIndex() == current)
+        if(page != nullptr && page->getIndex() == current)
             ui->centerOn(
-                document.get()->page(current)->actualWidth() / 2,
+                document.get()->page(current)->topX(),
                 document.get()->page(current)->topY()
             );
 }

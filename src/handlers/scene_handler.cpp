@@ -1,12 +1,11 @@
 #include "handlers.h"
 
 
-DoubleClickMode SceneHandler::dbclick_mode = DoubleClickMode::translate;
+SelectMode SceneHandler::select_mode = SelectMode::translate;
 
 
-SceneHandler::SceneHandler(DocPtr doc) : QObject() {
+SceneHandler::SceneHandler(const DocPtr& doc) : QObject(), document(doc) {
     scene = new DocScene;
-    document = doc;
 
     initConnectors();
 }
@@ -17,6 +16,9 @@ SceneHandler::~SceneHandler() {
 
 
 DocScene* SceneHandler::getScene() const { return scene; }
+
+void SceneHandler::setLangFrom(const QString &lang) { lang_from = lang; }
+void SceneHandler::setLangTo(const QString &lang) { lang_to = lang; }
 
 
 void SceneHandler::initConnectors() {
@@ -59,7 +61,6 @@ void SceneHandler::onDoubleClick(const QPointF& point) {
                 return;
             scene->setHightLight(word_box.first);
             emitter(word_box.first, word_box.second);
-            dialog.setWindowTitle(word_box.second);
             return;
         }
     }
@@ -86,19 +87,37 @@ void SceneHandler::onLookupReady(const QJsonObject& result) {
 
 
 void SceneHandler::emitter(const QRectF &box, const QString& text) {
-    switch(SceneHandler::dbclick_mode) {
-        case DoubleClickMode::hightlight:
-            break;
-        case DoubleClickMode::underline:
-            break;
-        case DoubleClickMode::dashed:
-            break;
-        case DoubleClickMode::translate:
-            emit translate(text);
-            emit lookup(text);
+    switch(SceneHandler::select_mode) {
+        case SelectMode::hightlight:
+            emit drawFillRect(box);
             return;
-        case DoubleClickMode::clipboard:
-            break;
+        case SelectMode::underline:
+            emit drawSolidLine(box);
+            return;
+        case SelectMode::dashed:
+            emit drawDashedLine(box);
+            return;
+        case SelectMode::translate:
+            dialog.setWindowTitle(text);
+            emit translate(
+                text, Parametrs{
+                    Parametr{
+                        QString("lang"), lang_from + QString("-") + lang_to
+                    }
+                }
+            );
+            emit lookup(
+                text, Parametrs{
+                    Parametr{
+                        QString("lang"), lang_from + QString("-") + lang_to
+                    },
+                    Parametr{QString("ui"), lang_to}
+                }
+            );
+            return;
+        case SelectMode::clipboard:
+            emit copyToClipboard(text);
+            return;
         default: return;
     }
 }
