@@ -6,31 +6,16 @@
 
 #include "handlers.h"
 
-MainHandler::MainHandler(MainWindow *window) : QObject() {
-    ui = window;
-
-    initConnectors();
-}
-
-MainHandler::~MainHandler() {
-    for(auto d: widgets)      delete d;
-    for(auto d: doc_handlers) delete d;
-    for(auto d: handlers)     delete d;
-    for(auto d: documents)    delete d;
-}
+MainHandler::MainHandler() : QObject() { ui = new MainWindow; }
+MainHandler::~MainHandler() {}
 
 
 void MainHandler::open(const QList<QUrl>& files) {
     for(QUrl path: files) {
-        createDocWidget(path);
-        assert(
-            documents.size() == amount &&
-            handlers.size() == amount &&
-            widgets.size() == amount
-        );
-        assert(
-            handlers[amount - 1]->getWidget() == widgets[amount - 1] &&
-                true
+        DocWidgetPtr widget(new DocWidgetHandler(path));
+        documents.push_back(widget);
+        ui->getCentral()->addTab(
+            widget.get()->getWidget(), widget.get()->getDocument()->getName()
         );
     }
 }
@@ -41,132 +26,69 @@ void MainHandler::close(int index) {
         2. Удалить их из коллекций
         3. осводить ресурсы
     */
+
     ui->getCentral()->removeTab(index);
-
-    BaseDocument* deleted_doc = documents[index];
-    DocWidget* deleted_widget = widgets[index];
-    DocHandler* deleted_doc_handler = doc_handlers[index];
-    DocWidgetHandler* deleted_handler = handlers[index];
-
     documents.erase(documents.begin() + index);
-    widgets.erase(widgets.begin() + index);
-    doc_handlers.erase(doc_handlers.begin() + index);
-    handlers.erase(handlers.begin() + index);
-
-    assert(
-        documents.size() == amount - 1 &&
-        handlers.size() == amount - 1 &&
-        widgets.size() == amount - 1 &&
-        doc_handlers.size() == amount - 1
-    );
-
-    delete deleted_doc;
-    delete deleted_widget;
-    delete deleted_handler;
-    delete deleted_doc_handler;
-
-    amount--;
 }
 
-void MainHandler::createDocWidget(QUrl path) {
-    /*
-        1. Создать виджет документа, документ,
-           обработчик сигналов представления документа,
-           обработчик сигналов виджета.
-        2. Добавить их в соответсвующие коллекции.
-        3. добавить виджет документа к цетральному виджету приложения
-        4. Соединить сигналы предстадения с его обработчиком
-    */
-    DocWidget* widget = new DocWidget;
-    DocPtr doc = DocPtr(new PDFDocument(path.path(), path.fileName()));
-    DocHandler* doc_handler = new DocHandler(
-        doc
-    );
-    /*
-    DocWidgetHandler* handler = new DocWidgetHandler(
-        widget, doc_handler
-    );*/
-
-    widgets.push_back(widget);
-    //documents.push_back(doc);
-    doc_handlers.push_back(doc_handler);
-    //handlers.push_back(handler);
-
-    ui->getCentral()->addTab(widget, doc->getName());
-    amount++;
-}
-
-
-const vector<void (MainHandler::*)(bool)> MainHandler::fileMenuSlots() const {
-    return {
-        &MainHandler::onOpen,
-        &MainHandler::onPrint,
-        &MainHandler::onProperty,
-        &MainHandler::onClose,
-        &MainHandler::onQuit,
-    };
-}
-
-const vector<void (MainHandler::*)(bool)> MainHandler::viewMenuSlots() const {
-    return {
-        &MainHandler::onZoomIn,
-        &MainHandler::onZoomOut,
-        &MainHandler::onFirstPage,
-        &MainHandler::onNextPage,
-        &MainHandler::onPrevPage,
-        &MainHandler::onLastPage,
-        &MainHandler::onFullScreen,
-    };
-}
-
-const vector<void (MainHandler::*)(bool)> MainHandler::toolMenuSlots() const {
-    return {
-        &MainHandler::onHighlight,
-        &MainHandler::onUnderline,
-        &MainHandler::onDashed,
-        &MainHandler::onTranslator,
-    };
-}
-
-const vector<void (MainHandler::*)(bool)> MainHandler::helpMenuSlots() const {
-    return {
-        &MainHandler::onHelp,
-        &MainHandler::onAbout,
-    };
-}
-
-const vector<void (MainHandler::*)(int)> MainHandler::centralSlots() const {
-    return {
-        &MainHandler::onTabClicked,
-        &MainHandler::onTabChanged,
-        &MainHandler::onTabClosed,
-    };
-}
 
 void MainHandler::initConnectors() {
     file_menu.set(ui->getMenu()->getFileGroup(), this);
     file_menu.connect<bool>(
-        ui->getMenu()->getFileGroupSignals(), fileMenuSlots()
+        Signals<QAction, bool>{
+            ui->getMenu()->fileGroupSize(), &QAction::triggered
+        },
+        Slots<MainHandler, bool>{
+            &MainHandler::onOpen, &MainHandler::onPrint,
+            &MainHandler::onProperty, &MainHandler::onClose,
+            &MainHandler::onQuit,
+        }
     );
 
     view_menu.set(ui->getMenu()->getViewGroup(), this);
     view_menu.connect<bool>(
-        ui->getMenu()->getViewGroupSignals(), viewMenuSlots()
+        vector<void (QAction::*)(bool)>{
+            ui->getMenu()->viewGroupSize(), &QAction::triggered
+        },
+        vector<void (MainHandler::*)(bool)>{
+            &MainHandler::onZoomIn, &MainHandler::onZoomOut,
+            &MainHandler::onFirstPage, &MainHandler::onNextPage,
+            &MainHandler::onPrevPage, &MainHandler::onLastPage,
+            &MainHandler::onFullScreen,
+        }
     );
 
     tools_menu.set(ui->getMenu()->getToolGroup(), this);
     tools_menu.connect<bool>(
-        ui->getMenu()->getToolGroupSignals(), toolMenuSlots()
+        vector<void (QAction::*)(bool)>{
+            ui->getMenu()->toolGroupSize(), &QAction::triggered
+        },
+        vector<void (MainHandler::*)(bool)>{
+            &MainHandler::onHighlight, &MainHandler::onUnderline,
+            &MainHandler::onDashed, &MainHandler::onTranslator,
+        }
     );
 
     help_menu.set(ui->getMenu()->getHelpGroup(), this);
     help_menu.connect<bool>(
-        ui->getMenu()->getHelpGroupSignals(), helpMenuSlots()
+        vector<void (QAction::*)(bool)>{
+            ui->getMenu()->helpGroupSize(), &QAction::triggered
+        },
+        vector<void (MainHandler::*)(bool)>{
+            &MainHandler::onHelp, &MainHandler::onAbout,
+        }
     );
 
     central.set(ui->getCentral(), this);
     central.connect<int>(
-        ui->getCentralSignals(), centralSlots()
+        vector<void (QTabWidget::*)(int)>{
+            &QTabWidget::tabBarClicked, &QTabWidget::currentChanged,
+            &QTabWidget::tabCloseRequested,
+        },
+        vector<void (MainHandler::*)(int)>{
+            &MainHandler::onTabClicked, &MainHandler::onTabChanged,
+            &MainHandler::onTabClosed,
+        }
     );
 }
 
@@ -190,7 +112,9 @@ void MainHandler::onProperty(bool) {
     if(index == -1)
         QMessageBox::information(ui, title, "");
     else
-        QMessageBox::information(ui, title, documents[index]->metaInfo());
+        QMessageBox::information(
+            ui, title, documents[index].get()->getDocument()->metaInfo()
+        );
 }
 
 void MainHandler::onClose(bool) {
@@ -213,7 +137,7 @@ void MainHandler::onZoomIn(bool) {
     if(index == -1)
         return;
     else
-        doc_handlers[index]->resize(110);
+        documents[index].get()->getHandler()->resize(110);
 }
 
 void MainHandler::onZoomOut(bool) {
@@ -222,7 +146,7 @@ void MainHandler::onZoomOut(bool) {
     if(index == -1)
         return;
      else
-        doc_handlers[index]->resize(90);
+        documents[index].get()->getHandler()->resize(90);
 }
 
 void MainHandler::onNextPage(bool) {

@@ -35,7 +35,9 @@ SOURCES += main.cpp\
     model/page.cpp \
     ui/scroll_bar.cpp \
     ui/page_view.cpp \
-    handlers/scene_handler.cpp
+    handlers/scene_handler.cpp \
+    network/yandex_worker.cpp \
+    network/base_web_worker.cpp
 
 HEADERS  += \
     ui/ui.h \

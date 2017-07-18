@@ -24,7 +24,13 @@ using std::pair;
 
 #include <poppler-qt5.h>
 
+
 static const double DEFAULT_DPI = 72.0;
+
+
+using Index = unsigned int;
+using Size = unsigned int;
+using Indexes = vector<Index>;
 
 
 class PDFPage {

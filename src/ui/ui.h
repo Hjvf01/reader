@@ -117,6 +117,7 @@ class DocToolBar : public QToolBar {
     Q_OBJECT
 
     static const int ICON_SIZE = 20;
+
     const QList<QString> scale_factors = {
         "50", "60", "70", "80", "90", "100",
         "110", "120", "130", "140", "150"
@@ -174,27 +175,27 @@ signals:
 class DocumentMenu : public QDockWidget {};
 
 
+using Actions = vector<QAction*>;
+using ShortCuts = vector<QKeySequence>;
+
+
 class DocWidget : public QMainWindow {
     Q_OBJECT
-
-    using Actions = vector<QAction*>;
-    using ShortCuts = vector<QKeySequence>;
-    using Icons = vector<QIcon>;
 
     DocToolBar* tool_bar = new DocToolBar;
 
     const Actions context_menu = {
-        new QAction("Find"),                //0
-        new QAction(),                      //1
-        new QAction("First Page"),          //2
-        new QAction("Previous Page"),       //3
-        new QAction("Next Page"),           //4
-        new QAction("Last Page"),           //5
-        new QAction(),                      //6
-        new QAction("Zoom in"),             //7
-        new QAction("Zoom out"),            //8
-        new QAction(),                      //9
-        new QAction("Full Screen")          //10
+        new QAction(QIcon(":/find.png"), "Find"),
+        new QAction(),
+        new QAction(QIcon(":first_page.png"), "First Page"),
+        new QAction(QIcon(":/prev_page.png"), "Previous Page"),
+        new QAction(QIcon(":/next_page.png"), "Next Page"),
+        new QAction(QIcon(":/last_page.png"), "Last Page"),
+        new QAction(),
+        new QAction(QIcon(":/zoom_in.png"), "Zoom in"),
+        new QAction(QIcon(":/zoom_out.png"), "Zoom out"),
+        new QAction(),
+        new QAction(QIcon(":/fullscreen.png"), "Full Screen")
     };
     const ShortCuts context_menu_short = {
         QKeySequence(Qt::CTRL + Qt::Key_F),
@@ -209,19 +210,7 @@ class DocWidget : public QMainWindow {
         QKeySequence(),
         QKeySequence(Qt::CTRL + Qt::Key_F11)
     };
-    const Icons context_menu_icons = {
-        QIcon(":/find.png"),
-        QIcon(),
-        QIcon(":/first_page.png"),
-        QIcon(":/prev_page.png"),
-        QIcon(":/next_page.png"),
-        QIcon(":/last_page.png"),
-        QIcon(),
-        QIcon(":/zoom_in.png"),
-        QIcon(":/zoom_out.png"),
-        QIcon(),
-        QIcon(":/fullscreen.png"),
-    };
+
 
 public:
     DocWidget(QWidget* parent=nullptr);
@@ -235,13 +224,11 @@ public:
 };
 
 
+using MenuList = vector<QMenu*>;
+
+
 class MenuBar : public QMenuBar {
     Q_OBJECT
-
-    using ShortCuts = vector<QKeySequence>;
-    using MenuList = vector<QMenu*>;
-    using Actions = vector<QAction*>;
-    using Icons = vector<QIcon>;
 
     const MenuList menu_groups = {
         new QMenu("File"),
@@ -251,20 +238,20 @@ class MenuBar : public QMenuBar {
     };
 
     const Actions file_group_actions = {
-        new QAction("Open"),
-        new QAction("Print"),
-        new QAction("Property"),
-        new QAction("Close"),
-        new QAction("Quit")
+        new QAction(QIcon(":/file.png"), "Open"),
+        new QAction(QIcon(":/print.png"), "Print"),
+        new QAction(QIcon(":/property.png"), "Property"),
+        new QAction(QIcon(":/close.png"), "Close"),
+        new QAction(QIcon(":/quit.png"), "Quit")
     };
     const Actions view_group_actions = {
-        new QAction("Zoom-in"),
-        new QAction("Zoom-out"),
-        new QAction("First Page"),
-        new QAction("Next Page"),
-        new QAction("Previous Page"),
-        new QAction("Last Page"),
-        new QAction("Full Screen")
+        new QAction(QIcon(":/zoom_in.png"), "Zoom-in"),
+        new QAction(QIcon(":/zoom_out.png"), "Zoom-out"),
+        new QAction(QIcon(":/first_page.png"), "First Page"),
+        new QAction(QIcon(":/next_page.png"), "Next Page"),
+        new QAction(QIcon(":/prev_page.pnt"), "Previous Page"),
+        new QAction(QIcon(":/last_page.png"), "Last Page"),
+        new QAction(QIcon(":/fullscreen.png"), "Full Screen")
     };
     const Actions tools_group_actions = {
         new QAction("Hightlight Text"),
@@ -273,15 +260,12 @@ class MenuBar : public QMenuBar {
         new QAction("Translator"),
     };
     const Actions help_group_actions = {
-        new QAction("Help"),
-        new QAction("About")
+        new QAction("Help"), new QAction("About")
     };
 
     const ShortCuts file_group_short = {
-        QKeySequence("Ctrl+O"),
-        QKeySequence("Ctrl+P"),
-        QKeySequence("Alt+Return"),
-        QKeySequence("Ctrl+W"),
+        QKeySequence("Ctrl+O"), QKeySequence("Ctrl+P"),
+        QKeySequence("Alt+Return"), QKeySequence("Ctrl+W"),
         QKeySequence("Ctrl+Q"),
     };
     const ShortCuts view_group_short = {
@@ -294,24 +278,7 @@ class MenuBar : public QMenuBar {
         QKeySequence(Qt::ALT + Qt::Key_F11)
     };
     const ShortCuts help_group_short = {
-        QKeySequence("Ctrl+H")
-    };
-
-    const Icons file_group_icons = {
-        QIcon(":/file.png"),
-        QIcon(":/print.png"),
-        QIcon(":/property.png"),
-        QIcon(":/close.png"),
-        QIcon(":/quit.png"),
-    };
-    const Icons view_group_icons = {
-        QIcon(":/zoom_in.png"),
-        QIcon(":/zoom_out.png"),
-        QIcon(":/first_page.png"),
-        QIcon(":/prev_page.png"),
-        QIcon(":/next_page.png"),
-        QIcon(":/last_page.png"),
-        QIcon(":/fullscreen.png"),
+        QKeySequence("Ctrl+H"), QKeySequence()
     };
 
 public:
@@ -319,16 +286,14 @@ public:
     ~MenuBar() override;
 
     vector<QAction*> getFileGroup(void) const;
-    const vector<void (QAction::*)(bool)> getFileGroupSignals(void) const;
-
     vector<QAction*> getViewGroup(void) const;
-    const vector<void (QAction::*)(bool)> getViewGroupSignals(void) const;
-
     vector<QAction*> getToolGroup(void) const;
-    const vector<void (QAction::*)(bool)> getToolGroupSignals(void) const;
-
     vector<QAction*> getHelpGroup(void) const;
-    const vector<void (QAction::*)(bool)> getHelpGroupSignals(void) const;
+
+    unsigned int fileGroupSize(void) const;
+    unsigned int viewGroupSize(void) const;
+    unsigned int toolGroupSize(void) const;
+    unsigned int helpGroupSize(void) const;
 };
 
 
@@ -345,8 +310,6 @@ public:
 
     QTabWidget* getCentral(void) const;
     MenuBar* getMenu(void) const;
-
-    const vector<void (QTabWidget::*)(int)> getCentralSignals(void) const;
 
     void statusBarMessage(QString msg);
 };

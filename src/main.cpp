@@ -13,8 +13,8 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     app.setStyle(QStyleFactory::create("Fusion"));
 
-    MainWindow main_window;
-    MainHandler main_handler(&main_window);
+    MainHandler main_handler;
+    main_handler.initConnectors();
 
     int res = app.exec();
     qDebug() << res;

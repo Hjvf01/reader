@@ -10,6 +10,13 @@ using std::vector;
 #include <Qt>
 
 
+template <typename Sender, typename Type, typename... Rest>
+using Signals = vector<void (Sender::*)(Type, Rest...)>;
+
+template <typename Receiver, typename Type, typename... Rest>
+using Slots = vector<void (Receiver::*)(Type, Rest...)>;
+
+
 using Index = unsigned int;
 
 
@@ -54,8 +61,8 @@ public:
 
     template <typename Type, typename... Rest>
     void connect(
-            const vector<void (Sender::*)(Type, Rest...)>& _signals,
-            const vector<void (Receiver::*)(Type, Rest...)>& _slots,
+            const Signals<Sender, Type, Rest...>& _signals,
+            const Slots<Receiver, Type, Rest...>& _slots,
             Qt::ConnectionType type = Qt::AutoConnection
     ) const {
         assert(_signals.size() == _slots.size());
@@ -96,9 +103,7 @@ class One2Many : public BaseConnector<Sender, Receiver> {
     vector<Receiver*> receivers;
 
 public:
-    One2Many() {
-        sender = nullptr;
-    }
+    One2Many() { sender = nullptr; }
 
 
     One2Many(Sender* sender, const vector<Receiver*>& receivers) {

@@ -18,6 +18,7 @@ DocWidgetHandler::~DocWidgetHandler() {
 
 DocWidget* DocWidgetHandler::getWidget() const { return ui; }
 DocHandler* DocWidgetHandler::getHandler() const { return handler; }
+BaseDocument* DocWidgetHandler::getDocument() const { return document.get(); }
 
 
 void DocWidgetHandler::initConnectors() {
@@ -129,7 +130,9 @@ void DocWidgetHandler::onDictLangsReady(const QJsonArray& result) {
         QString value = pair[1];
         d_langs.insert(key, value);
     }
-    for(QString key: d_langs.keys()) dict_langs.insert(key, {});
+
+    for(QString key: d_langs.keys())
+        dict_langs.insert(key, {});
 
     for(QString key: dict_langs.keys()) {
         auto entry = d_langs.find(key);

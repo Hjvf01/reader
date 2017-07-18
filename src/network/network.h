@@ -1,6 +1,10 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+
+#include <vector>
+using std::vector;
+
 #include <QtNetwork/QSslSocket>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkAccessManager>
@@ -17,40 +21,32 @@
 #include <QtCore/QJsonObject>
 
 
+using Parameter = QPair<QString, QString>;
+using Parameters = QList<Parameter>;
+
+using JsonError = QJsonParseError::ParseError;
+using NetworkError = QNetworkReply::NetworkError;
+
+
 class BaseWebWorker : public QObject {
     Q_OBJECT
 
 protected:
-    using Prm = QPair<QString, QString>;
-    using Prms = QList<Prm>;
-
     QNetworkAccessManager manager;
     QNetworkRequest request;
-    QUrlQuery params;
     QUrl url;
     QSslConfiguration config;
 
 public:
-    BaseWebWorker() {
-        config = QSslConfiguration::defaultConfiguration();
-        config.setProtocol(QSsl::TlsV1_2);
-        request.setSslConfiguration(config);
-    }
-
-    ~BaseWebWorker() {}
-
-    void setParams(Prms ps) {
-        for(Prm param: params.queryItems()) {
-            if(param.first != QString("key"))
-                params.removeQueryItem(param.first);
-        }
-        for(Prm param: ps)
-            params.addQueryItem(param.first, param.second);
-    }
+    BaseWebWorker();
+    ~BaseWebWorker();
 
 signals:
-    /* если что-то пойдет не так*/
     void errorSignal(const QString& msg);
+
+protected:
+    bool jsonHasError(const QJsonParseError& error) const;
+    bool replyHasError(QNetworkReply* reply) const;
 };
 
 
@@ -222,13 +218,41 @@ signals:
 };
 
 
-
 class YandexWorker : public BaseWebWorker {
     static const QString TR_KEY;
     static const QString DICT_KEY;
 
     static const QString TR_URL;
     static const QString DICT_URL;
+
+    QUrlQuery dict_params;
+    QUrlQuery tr_params;
+public:
+    YandexWorker();
+    ~YandexWorker() override;
+
+public slots:
+    void onGetLangs(void) const;
+    void onLookup(const QString& text, const Parameters& params) const;
+    void onTranslate(const QString& text, const Parameters& params) const;
+
+private slots:
+    void onFinished(QNetworkReply* reply);
+
+private:
+    void setParams(Prms ps) {
+        for(Prm param: params.queryItems()) {
+            if(param.first != QString("key"))
+                params.removeQueryItem(param.first);
+        }
+        for(Prm param: ps)
+            params.addQueryItem(param.first, param.second);
+    }
+
+signals:
+    void lookupReady(const QJsonDocument& result);
+    void translateReady(const QJsonDocument& result);
+    void getLangsReady(const QJsonDocument& result);
 };
 
 #endif // NETWORK_H

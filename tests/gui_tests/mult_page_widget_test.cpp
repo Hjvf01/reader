@@ -8,8 +8,8 @@ MultDocWidgetTest::~MultDocWidgetTest() {}
 
 
 bool MultDocWidgetTest::compareIndexes(
-        const Indexes &actual, const Indexes &expected)
-const {
+        const Indexes &actual, const Indexes &expected
+) const {
     assert(actual.size() == expected.size());
     Size len = actual.size();
     for(Indx i = 0; i < len; i++)
@@ -21,7 +21,7 @@ const {
 
 void MultDocWidgetTest::testFirstPage() {
     #define ACT(I) controller->getWidget()->getToolBar()->getActions()[I]
-    #define INDXS controller->getHandler()->getIndexes()
+    #define INDXS  controller->getHandler()->getIndexes()
 
     QAction* fst_page = ACT(3);
 
@@ -66,7 +66,43 @@ void MultDocWidgetTest::testPrevPage() {
 }
 
 
-void MultDocWidgetTest::testNextPage() {}
+void MultDocWidgetTest::testNextPage() {
+    Indexes before_indexes = INDXS;
+    QVERIFY(compareIndexes(before_indexes, Indexes{170, 171, 172}));
+    controller->getHandler()->goToNext();
+    controller->getHandler()->goToNext();
+    QVERIFY(compareIndexes(INDXS, Indexes{170, 171, 172}));
+
+    QAction* next_page = ACT(5);
+
+    Indexes indexes = {170, 171, 172};
+    while(controller->getHandler()->getCurrentPage() != 200) {
+        next_page->triggered();
+        for(Indx i = 0; i < 3; i++) indexes[i]++;
+        QVERIFY(compareIndexes(INDXS, indexes));
+    }
+
+    QVERIFY(compareIndexes(INDXS, Indexes{198, 199, 200}));
+}
 
 
-void MultDocWidgetTest::testLastPage() {}
+void MultDocWidgetTest::testLastPage() {
+    QVERIFY(compareIndexes(INDXS, Indexes{198, 199, 200}));
+
+    QAction* last_page = ACT(6);
+
+    last_page->triggered();
+    QVERIFY(compareIndexes(INDXS, Indexes{
+        controller->getDocument()->amountPages() - 3,
+        controller->getDocument()->amountPages() - 2,
+        controller->getDocument()->amountPages() - 1
+    }));
+
+    /* any effect */
+    last_page->triggered();
+    QVERIFY(compareIndexes(INDXS, Indexes{
+        controller->getDocument()->amountPages() - 3,
+        controller->getDocument()->amountPages() - 2,
+        controller->getDocument()->amountPages() - 1
+    }));
+}

@@ -1,6 +1,3 @@
-#include <memory>
-using std::shared_ptr;
-
 #include <QApplication>
 #include <QStyleFactory>
 
@@ -17,9 +14,9 @@ int main(int argc, char** argv) {
     VerbosityLevel lvl = VerbosityLevel::verbose;
 
     const Tests tests = {
-        TestPtr(new SceneTest(lvl)),
-        TestPtr(new SinglePageViewTest("/single_page.pdf", lvl)),
-        TestPtr(new MultPageViewTest("/med_doc.pdf", lvl)),
+        //TestPtr(new SceneTest(lvl)),
+        //TestPtr(new SinglePageViewTest("/single_page.pdf", lvl)),
+        //TestPtr(new MultPageViewTest("/med_doc.pdf", lvl)),
         TestPtr(new SingleDocWidgetTest("/single_page.pdf", lvl)),
         TestPtr(new MultDocWidgetTest("/huge_doc.pdf", lvl)),
     };

@@ -174,6 +174,7 @@ public:
 
     DocWidget* getWidget(void) const;
     DocHandler* getHandler(void) const;
+    BaseDocument* getDocument(void) const;
 
 private:
     void initConnectors(void);
@@ -214,6 +215,7 @@ private slots:
 };
 
 
+using DocWidgetPtr = shared_ptr<DocWidgetHandler>;
 class MainHandler : public QObject {
     Q_OBJECT
 
@@ -225,12 +227,8 @@ class MainHandler : public QObject {
     using INT_SLOTS = vector<INT_SLOT>;
     using BOOL_SLOTS = vector<BOOL_SLOT>;
 
-    MainWindow* ui; // не владеет
-    vector<DocWidget*> widgets;
-    vector<DocHandler*> doc_handlers;
-    vector<DocWidgetHandler*> handlers;
-    vector<BaseDocument*> documents;
-    unsigned int amount = 0;
+    MainWindow* ui;
+    vector<DocWidgetPtr> documents;
 
     Many2One<QAction, MainHandler> file_menu;
     Many2One<QAction, MainHandler> view_menu;
@@ -241,26 +239,16 @@ class MainHandler : public QObject {
 
 
 public:
-    MainHandler(MainWindow* window);
-    ~MainHandler();
-
-    void open(const QList<QUrl>& files);
-    void close(int index);
-
-    vector<void (MainHandler::*)(void)> getMenuHandlers(void);
-
-private:
-    void createDocWidget(QUrl path);
+    MainHandler();
+    ~MainHandler() override;
 
     void initConnectors(void);
 
-    const BOOL_SLOTS fileMenuSlots(void) const;
-    const BOOL_SLOTS viewMenuSlots(void) const;
-    const BOOL_SLOTS toolMenuSlots(void) const;
-    const BOOL_SLOTS helpMenuSlots(void) const;
-    const INT_SLOTS centralSlots(void) const;
+private:
+    void open(const QList<QUrl>& files);
+    void close(int index);
 
-public slots:
+private slots:
     void onOpen(bool);
     void onPrint(bool);
     void onProperty(bool);

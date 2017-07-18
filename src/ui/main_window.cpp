@@ -25,15 +25,6 @@ void MainWindow::statusBarMessage(QString msg) {
 }
 
 
-const vector<void (QTabWidget::*)(int)> MainWindow::getCentralSignals() const {
-    return {
-        &QTabWidget::tabBarClicked,
-        &QTabWidget::currentChanged,
-        &QTabWidget::tabCloseRequested
-    };
-}
-
-
 MainWindow::~MainWindow() {
     delete menu;
     delete central_widget;
