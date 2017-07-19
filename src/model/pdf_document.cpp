@@ -75,12 +75,14 @@ void PDFDocument::build() {
     }
 }
 
+
 int PDFDocument::length() const { return doc_size->height(); }
 int PDFDocument::width() const { return doc_size->width(); }
 QSize* PDFDocument::size() const { return doc_size; }
 vector<PDFPage*> PDFDocument::getPages() const { return pages; }
 double PDFDocument::scaleFactorX() { return dpix / DEFAULT_DPI; }
 double PDFDocument::scaleFactorY() { return dpiy / DEFAULT_DPI; }
+
 
 PDFPage* PDFDocument::page(unsigned int index) const {
     if(index > pages.size()) throw "IndexOutOfRange";

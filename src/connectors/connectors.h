@@ -17,17 +17,33 @@ template <typename Receiver, typename Type, typename... Rest>
 using Slots = vector<void (Receiver::*)(Type, Rest...)>;
 
 
+using Connection = Qt::ConnectionType;
+
+
 using Index = unsigned int;
 
 
 template <typename Sender, typename Receiver> class BaseConnector {
 public:
+
+    template <typename Type, typename... Rest>
+    using _Signals = Signals<Sender, Type, Rest...>;
+
+    template <typename Type, typename... Rest>
+    using _Slots = Slots<Receiver, Type, Rest...>;
+
+    using VoidSignals = vector<void (Sender::*)(void)>;
+    using VoidSlots = vector<void (Receiver::*)(void)>;
+
+
+
+
     virtual void disconnect(void) const = 0;
 
     virtual void connect(
         const vector<void (Sender::*)(void)>&,
         const vector<void (Receiver::*)(void)>&,
-        Qt::ConnectionType type = Qt::AutoConnection
+        Connection type = Qt::AutoConnection
     ) const = 0;
 
     virtual ~BaseConnector() {}
@@ -59,11 +75,10 @@ public:
     }
 
 
-    template <typename Type, typename... Rest>
-    void connect(
-            const Signals<Sender, Type, Rest...>& _signals,
-            const Slots<Receiver, Type, Rest...>& _slots,
-            Qt::ConnectionType type = Qt::AutoConnection
+    template <typename Type, typename... Rest>  void connect(
+            const vector<void (Sender::*)(Type, Rest...)>& _signals,
+            const vector<void (Receiver::*)(Type, Rest...)>& _slots,
+            Connection type = Qt::AutoConnection
     ) const {
         assert(_signals.size() == _slots.size());
 
@@ -76,7 +91,7 @@ public:
     void connect(
             const vector<void (Sender::*)(void)>& _signals,
             const vector<void (Receiver::*)(void)>& _slots,
-            Qt::ConnectionType type = Qt::AutoConnection
+            Connection type = Qt::AutoConnection
     ) const override {
         assert(_signals.size() == _slots.size());
 
@@ -117,7 +132,7 @@ public:
         if(sender == nullptr && this->receivers.size() == 0) {
             this->sender = sender;
             for(Receiver* receiver: receivers)
-                this->receivers.push_back(receivers);
+                this->receivers.push_back(receiver);
         }
     }
 
@@ -168,6 +183,9 @@ public:
 
 template <typename Sender, typename Receiver>
 class Many2Many : public BaseConnector<Sender, Receiver> {
+    using CRSenders = const vector<Sender*>;
+    using CRReceivers = const vector<Receiver*>;
+
     vector<Sender*> senders;
     vector<Receiver*> receivers;
 
@@ -175,9 +193,7 @@ public:
     Many2Many() {}
 
 
-    Many2Many(
-        const vector<Sender*>& senders, const vector<Receiver*>& receivers
-    ) {
+    Many2Many(CRSenders senders, CRReceivers receivers) {
         assert(senders.size() == receivers.size());
 
         for(Sender* sender: senders)
@@ -189,9 +205,7 @@ public:
     }
 
 
-    void set(
-        const vector<Sender*>& senders, const vector<Receiver*>& receivers
-    ) {
+    void set(CRSenders senders, CRReceivers receivers) {
         assert(senders.size() == receivers.size());
 
         if(this->senders.size() == 0 && this->receivers.size() == 0) {

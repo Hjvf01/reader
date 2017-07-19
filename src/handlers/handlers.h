@@ -219,14 +219,6 @@ using DocWidgetPtr = shared_ptr<DocWidgetHandler>;
 class MainHandler : public QObject {
     Q_OBJECT
 
-    using VOID_SLOT = void (MainHandler::*)(void);
-    using BOOL_SLOT = void (MainHandler::*)(bool);
-    using INT_SLOT = void (MainHandler::*)(int);
-
-    using VOID_SLOTS = vector<VOID_SLOT>;
-    using INT_SLOTS = vector<INT_SLOT>;
-    using BOOL_SLOTS = vector<BOOL_SLOT>;
-
     MainWindow* ui;
     vector<DocWidgetPtr> documents;
 

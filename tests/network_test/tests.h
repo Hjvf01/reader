@@ -1,32 +1,60 @@
 #ifndef TESTS_H
 #define TESTS_H
 
+
+#include <memory>
+using std::shared_ptr;
+#include <vector>
+using std::vector;
+
 #include <QtCore/QObject>
+#include <QtTest/QTest>
 
 #include "../../src/network/network.h"
-#include "../../src/ui/dialogs.h"
+#include "../../src/connectors/connectors.h"
 
 
-class ResultHandler : public QObject {
+class Handler : public QObject {
     Q_OBJECT
 
-    TrDialog dialog;
-    bool flag = false;
+    bool langs = false;
+    bool translate = false;
+    bool lookup = false;
 
 public:
-    ResultHandler();
-    ~ResultHandler() override;
+    Handler();
+    ~Handler() override;
+
+    bool getLangs(void) const;
+    bool getTranslate(void) const;
+    bool getLookup(void) const;
 
 public slots:
-    void onTrLangsReady(const QJsonObject langs);
-    void onDictLangsReady(const QJsonArray langs);
-    void onTranslateReady(const QJsonObject result);
-    void onLookupRedy(const QJsonObject result);
-
-    void onError(QString error_msg);
+    void onGetLangs(const QJsonDocument& result);
+    void onTranslate(const QJsonDocument& result);
+    void onLookup(const QJsonDocument& result);
 };
 
 
-void trConnector(TrWorker* sender, ResultHandler* receiver);
-void dictConnector(DictWorker* sender, ResultHandler* receiver);
+class YandexWorkerTest : public QObject {
+    Q_OBJECT
+
+    using Signals =
+        BaseConnector<YandexWorker, Handler>::_Signals<const QJsonDocument&>;
+    using Slots =
+        BaseConnector<YandexWorker, Handler>::_Slots<const QJsonDocument&>;
+
+    YandexWorker worker;
+    Handler handler;
+    One2One<YandexWorker, Handler> connector;
+
+public:
+    YandexWorkerTest();
+    ~YandexWorkerTest() override;
+
+private slots:
+    void testGetLangs(void);
+    void testTranslate(void);
+    void testLookup(void);
+};
 #endif // TESTS_H

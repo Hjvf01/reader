@@ -125,12 +125,23 @@ protected:
 
 
 class TocItem : public QStandardItem {
-    //Q_OBJECT
+    Q_OBJECT
+
+public:
+    TocItem(const Poppler::LinkDestination& link);
+    ~TocItem() override;
 };
 
 
 class TocModel : public QStandardItemModel {
-    //Q_OBJECT
+    Q_OBJECT
+
+public:
+    TocModel(QDomDocument* dom, const QString& name);
+    ~TocModel() override;
+
+private:
+    void build(QDomNode root, QStandardItem* model);
 };
 
 
