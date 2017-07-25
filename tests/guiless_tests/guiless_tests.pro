@@ -13,8 +13,11 @@ LIBS         += -L/usr/lib -lpoppler-qt5
 SOURCES += main.cpp\
     ../../src/model/base_document.cpp\
     ../../src/model/pdf_document.cpp\
-    ../../src/model/page.cpp \
+    ../../src/model/page.cpp\
+    ../../src/model/toc_model.cpp\
+    ../../src/model/toc_item.cpp\
     test.cpp
 
-HEADERS += ../../src/model/models.h \
+HEADERS += \
+    ../../src/model/models.h\
     tests.h

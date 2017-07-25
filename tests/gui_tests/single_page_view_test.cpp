@@ -13,7 +13,7 @@ void SinglePageViewTest::testSceneRect() { compareRect(); }
 
 void SinglePageViewTest::testScrollingDown() {
     int h = controller->getView()->height();
-    int d_h = doc.get()->size()->height();
+    int d_h = doc.get()->size().height();
     int loc = 0;
     while(controller->getLocation() + h < d_h) {
         QTest::keyClick(controller->getView(), Qt::Key_Down);

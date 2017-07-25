@@ -58,22 +58,19 @@ void PDFDocumentTest::testName() {
         QVERIFY(docs[i]->getName() == paths[i].fileName());
 }
 
-void PDFDocumentTest::testAmountPages() {
-    for(int i = 0; i < length; i++)
-        QVERIFY(docs[i]->getPages().size() == docs[i]->amountPages());
-}
-
-void PDFDocumentTest::testResizing() {/*
+void PDFDocumentTest::testResizing() {
     cout << "\t\t\t***101***" << endl;
     test();
 
     cout << "\t\t\t***200.0***" << endl;
-    for(BaseDocument* doc: docs) doc->setDpi(200.0, 200.0);
+    for(BaseDocument* doc: docs)
+        doc->setDpi(200.0, 200.0);
     test();
 }
 
 void PDFDocumentTest::testBuild() {
-    //for(BaseDocument* doc: docs) doc->setDpi(150.0, 150.0);*/
+    for(BaseDocument* doc: docs)
+        doc->setDpi(150.0, 150.0);
 }
 
 
@@ -81,8 +78,8 @@ void PDFDocumentTest::testSizes() {
     double old_dpi_x = 101.0, old_dpi_y = 101.0;
     for(BaseDocument* doc: docs) doc->setDpi(old_dpi_x, old_dpi_y);
     for(BaseDocument* doc: docs) {
-        QSize* s = doc->size();
-        qDebug() << *s;
+        QSize s = doc->size();
+        qDebug() << s;
     }
     for(auto doc: docs) {
         unsigned int len = doc->amountPages();
@@ -91,6 +88,6 @@ void PDFDocumentTest::testSizes() {
     }
     for(auto doc: docs) {
         qDebug() << doc->getName();
-        qDebug() << *(doc->size());
+        qDebug() << doc->size();
     }
 }

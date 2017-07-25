@@ -11,7 +11,7 @@ SceneTest::SceneTest(VerbosityLevel lvl) : QObject(), level(lvl) {
     doc.get()->setDpi(101, 101);
     doc.get()->init();
     controller->getScene()->setSceneRect(
-        0, 0, doc.get()->size()->width(), doc.get()->size()->height()
+        0, 0, doc.get()->size().width(), doc.get()->size().height()
     );
     view.setScene(controller->getScene());
 
@@ -27,7 +27,7 @@ void SceneTest::testDbClick() {
     vector<PageView*> page_views(len);
     for(unsigned int i = 0; i < len; i++) {
         PageView* page_v = new PageView(doc.get()->page(i)->render(), i);
-        page_v->setOffset(doc.get()->page(i)->offset());
+        page_v->setOffset(doc.get()->page(i)->getOffset());
         controller->getScene()->addItem(page_v);
         page_views[i] = page_v;
     }

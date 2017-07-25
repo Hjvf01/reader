@@ -31,6 +31,40 @@ void SceneHandler::initConnectors() {
             &SceneHandler::onDoubleClick
         }
     );
+
+    scene2network.set(this, &translator);
+    scene2network.connect<const Parameters&>(
+        vector<void (SceneHandler::*)(const Parameters&)>{
+            &SceneHandler::translate, &SceneHandler::lookup
+        },
+        vector<void (YandexWorker::*)(const Parameters&)>{
+            &YandexWorker::onTranslate, &YandexWorker::onLookup
+        }
+    );
+
+    network2handler.set(&translator, &network_handler);
+    network2handler.connect<const QJsonDocument&>(
+        vector<void (YandexWorker::*)(const QJsonDocument&)>{
+            &YandexWorker::translateReady, &YandexWorker::lookupReady
+        },
+        vector<void (YandexHandler::*)(const QJsonDocument&)>{
+            &YandexHandler::translateHandle, &YandexHandler::lookupHandle
+        }
+    );
+
+    handler2this.set(&network_handler, this);
+    handler2this.connect<const QString&>(
+        vector<void (YandexHandler::*)(const QString&)>{
+            &YandexHandler::translateRedy, &YandexHandler::lookupReady
+        },
+        vector<void (SceneHandler::*)(const QString&)>{
+            &SceneHandler::onTranslateReady, &SceneHandler::onLookupReady
+        }
+    );
+
+    connect(
+        &dialog, &TrDialog::closeDialog, this, &SceneHandler::onDialogClose
+    );
 }
 
 
@@ -70,7 +104,7 @@ void SceneHandler::onDoubleClick(const QPointF& point) {
 void SceneHandler::onError(const QString& error_msg) { qDebug() << error_msg; }
 
 
-void SceneHandler::onTranslateReady(const QJsonObject& result) {
+void SceneHandler::onTranslateReady(const QString& result) {
     dialog.setTranslate(result);
     if(dialog_shown == false)
         dialog.show();
@@ -78,11 +112,17 @@ void SceneHandler::onTranslateReady(const QJsonObject& result) {
 }
 
 
-void SceneHandler::onLookupReady(const QJsonObject& result) {
+void SceneHandler::onLookupReady(const QString& result) {
     dialog.setLookup(result);
     if(dialog_shown == false)
         dialog.show();
     dialog_shown = true;
+}
+
+
+void SceneHandler::onDialogClose(void) {
+    scene->eraseHightlight();
+    dialog_shown = false;
 }
 
 
@@ -100,18 +140,16 @@ void SceneHandler::emitter(const QRectF &box, const QString& text) {
         case SelectMode::translate:
             dialog.setWindowTitle(text);
             emit translate(
-                text, Parametrs{
-                    Parametr{
-                        QString("lang"), lang_from + QString("-") + lang_to
-                    }
+                Parameters{
+                    Parameter{"lang", lang_from + "-" + lang_to},
+                    Parameter{"text", text}
                 }
             );
             emit lookup(
-                text, Parametrs{
-                    Parametr{
-                        QString("lang"), lang_from + QString("-") + lang_to
-                    },
-                    Parametr{QString("ui"), lang_to}
+                Parameters{
+                    Parameter{"lang", lang_from + QString("-") + lang_to},
+                    Parameter{QString("ui"), lang_to},
+                    Parameter{"text", text}
                 }
             );
             return;

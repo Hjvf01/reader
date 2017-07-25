@@ -1,42 +1,46 @@
 #include "models.h"
 
 
-PDFPage::PDFPage(Page *page, int o_x, int o_y, double dpix, double dpiy) {
-    this->page = page;
-    width = this->page->pageSize().width();
-    height = this->page->pageSize().height();
-    actual_height = (height * dpiy) / DEFAULT_DPI;
-    actual_width = (width * dpix) / DEFAULT_DPI;
-    offset_x = o_x;
-    offset_y = o_y;
-    this->dpix = dpix;
-    this->dpiy = dpiy;
-    t_offset = new QPoint(o_x, o_y);
-    drawn = false;
-    scale_factor_x = dpix / DEFAULT_DPI;
-    scale_factor_y = dpiy / DEFAULT_DPI;
+PDFPage::PDFPage(Page *_page, const QPoint& _offset, double _dpi)
+        : page(_page), offset(_offset), dpi(_dpi), drawn(false) {
+
+    scale_factor = dpi / DEFAULT_DPI;
+    base_rect = QRect(offset, page->pageSize());
+    actual_rect = QRect(
+        offset.x(), offset.y(),
+        scale_factor * page->pageSize().width(),
+        scale_factor * page->pageSize().height()
+    );
 }
 
-PDFPage::~PDFPage() { delete page; delete t_offset; }
+PDFPage::~PDFPage() {
+    delete page;
+}
 
 
-QSize PDFPage::size() const { return QSize(width, height); }
-QSize PDFPage::actualSize() const { return QSize(actual_width, actual_height); }
-QPoint PDFPage::offset() const { return *t_offset; }
+QSize PDFPage::size() const {
+    return QSize(base_rect.width(), base_rect.height());
+}
+
+QSize PDFPage::actualSize() const {
+    return QSize(actual_rect.width(), actual_rect.height());
+}
+
+QPoint PDFPage::getOffset() const { return offset; }
 
 
-int PDFPage::topX() const { return offset_x; }
-int PDFPage::topY() const { return offset_y; }
+int PDFPage::topX() const { return offset.x(); }
+int PDFPage::topY() const { return offset.y(); }
 
-int PDFPage::actualHeight() const { return actual_height; }
-int PDFPage::actualWidth() const { return actual_width; }
-int PDFPage::baseHeight() const { return height; }
-int PDFPage::baseWidth() const { return width; }
+int PDFPage::actualHeight() const { return actual_rect.height(); }
+int PDFPage::actualWidth() const { return actual_rect.width(); }
+int PDFPage::baseHeight() const { return base_rect.height(); }
+int PDFPage::baseWidth() const { return base_rect.width(); }
 
-int PDFPage::bottom() const { return offset_y + actual_height; }
+int PDFPage::bottom() const { return offset.y() + actual_rect.height(); }
 
-int PDFPage::centerY() const { return offset_y + actual_height / 2; }
-int PDFPage::centerX() const { return actual_height / 2; }
+int PDFPage::centerY() const { return offset.y() + actual_rect.height() / 2; }
+int PDFPage::centerX() const { return actual_rect.height() / 2; }
 
 bool PDFPage::isDrawn() const { return drawn; }
 void PDFPage::cancelDrawn() { drawn = false; }
@@ -49,8 +53,8 @@ QList<QRectF> PDFPage::baseBoundingBoxes() const {
     QList<Text*> boxes = page->textList();
     for(Text* box: boxes)
         list.append(QRectF(
-            offset_x + box->boundingBox().x(),
-            offset_y + box->boundingBox().y(),
+            offset.x() + box->boundingBox().x(),
+            offset.y() + box->boundingBox().y(),
             box->boundingBox().width(),
             box->boundingBox().height()
         ));
@@ -65,10 +69,10 @@ QList<QRectF> PDFPage::actualBoundingBoxes() const {
     QList<Text*> boxes = page->textList();
     for(Text* box: boxes)
         list.append(QRectF(
-            offset_x + scale_factor_x * box->boundingBox().x(),
-            offset_y + scale_factor_y * box->boundingBox().y(),
-            scale_factor_x * box->boundingBox().width(),
-            scale_factor_y * box->boundingBox().height()
+            offset.x() + scale_factor * box->boundingBox().x(),
+            offset.y() + scale_factor * box->boundingBox().y(),
+            scale_factor * box->boundingBox().width(),
+            scale_factor * box->boundingBox().height()
         ));
     for(Text* box: boxes) delete box;
     return list;
@@ -99,10 +103,10 @@ QList<pair<QRectF, QString>> PDFPage::actualTextBoxes() const {
     for(Text* box: boxes)
         list.append(pair<QRectF, QString>(
             QRectF(
-                 offset_x + scale_factor_x * box->boundingBox().x(),
-                 offset_y + scale_factor_y * box->boundingBox().y(),
-                 scale_factor_x * box->boundingBox().width(),
-                 scale_factor_y * box->boundingBox().height()
+                 offset.x() + scale_factor * box->boundingBox().x(),
+                 offset.y() + scale_factor * box->boundingBox().y(),
+                 scale_factor * box->boundingBox().width(),
+                 scale_factor * box->boundingBox().height()
             ),
             QString(box->text())
         ));
@@ -132,5 +136,5 @@ vector<pair<QRectF, QString>> PDFPage::findAll(const QString& text) {
 QPixmap PDFPage::render() {
     /* вернет изображение страницы */
     drawn = true;
-    return QPixmap::fromImage(page->renderToImage(dpix, dpiy));
+    return QPixmap::fromImage(page->renderToImage(dpi, dpi));
 }

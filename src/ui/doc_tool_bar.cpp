@@ -30,14 +30,17 @@ DocToolBar::~DocToolBar() {
     delete reload;
 }
 
-void DocToolBar::setPageNums(const QString current, const QString last) {
+
+void DocToolBar::setPageNums(const QString& current, const QString& last) {
     current_page.setText(current);
     page_count.setText("\t<html><strong>" + last + "</strong></html>");
     page_validator.setRange(1, last.toInt() - 1);
     current_page.setValidator(&page_validator);
+    setCurrentPage(current);
 }
 
-void DocToolBar::setCurrentPage(const QString num) {
+
+void DocToolBar::setCurrentPage(const QString& num) {
     current_page.setText(num);
 }
 
@@ -50,6 +53,7 @@ QComboBox* DocToolBar::getTrFrom() const { return tr_from; }
 vector<QComboBox*> DocToolBar::getComboBoxes() const {
     return {scale_box, tr_from, tr_to};
 }
+
 
 vector<QAction*> DocToolBar::getActions() const {
     return {

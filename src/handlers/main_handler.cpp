@@ -10,6 +10,9 @@ MainHandler::MainHandler() : QObject() { ui = new MainWindow; }
 MainHandler::~MainHandler() {}
 
 
+MainWindow* MainHandler::getWindow() const { return ui; }
+
+
 void MainHandler::open(const QList<QUrl>& files) {
     for(QUrl path: files) {
         DocWidgetPtr widget(new DocWidgetHandler(path));

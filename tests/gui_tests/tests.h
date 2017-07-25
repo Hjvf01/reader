@@ -22,6 +22,7 @@ using std::abs;
 #include <QtWidgets/QApplication>
 
 #include <QtWidgets/QGraphicsRectItem>
+#include <QtWidgets/QMainWindow>
 
 #include <QtGui/QBrush>
 #include <QtGui/QPen>
@@ -68,6 +69,8 @@ public:
 private slots:
     void testDbClick(void);
 };
+
+
 
 
 using DocPtr = shared_ptr<BaseDocument>;
@@ -133,6 +136,25 @@ private slots:
 };
 
 
+
+class DocMenuHandlerTest : public QObject {
+    Q_OBJECT
+
+    DocPtr doc;
+    DocMenuHandler* handler;
+    QMainWindow* window;
+
+public:
+    DocMenuHandlerTest();
+    ~DocMenuHandlerTest() override;
+
+private slots:
+    void testTOCItemActivated(void);
+};
+
+
+
+
 class BaseDocWidgetTest : public QObject {
     Q_OBJECT
 
@@ -176,4 +198,30 @@ private slots:
     void testPrevPage(void);
     void testNextPage(void);
     void testLastPage(void);
+};
+
+
+
+
+class CentralWidgetTest : public QObject {
+    Q_OBJECT
+
+    const QList<QUrl> paths = {
+        QUrl(base + "/single_page.pdf"),
+        QUrl(base + "/small_doc.pdf"),
+        QUrl(base + "/large_doc.pdf"),
+        QUrl(base + "/1.The Fellowship of the Ring.pdf"),
+        QUrl(base + "/2.The Two Towers.pdf"),
+        QUrl(base + "/3.The Return of the King .pdf"),
+    };
+
+    MainHandler handler;
+
+public:
+    CentralWidgetTest();
+    ~CentralWidgetTest() override;
+
+private slots:
+    void testOpen(void);
+    void testClose(void);
 };

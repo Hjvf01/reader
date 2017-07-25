@@ -23,26 +23,35 @@ SOURCES +=\
     ui/doc_tool_bar.cpp\
     ui/doc_widget.cpp\
     ui/page_view.cpp\
+    ui/tr_dialog.cpp\
+    ui/document_menu.cpp\
     #
     model/base_document.cpp\
     model/pdf_document.cpp\
     model/page.cpp\
+    model/toc_model.cpp\
+    model/toc_item.cpp\
     #
     handlers/main_handler.cpp\
     handlers/doc_handler.cpp\
     handlers/doc_widget_handler.cpp\
     handlers/scene_handler.cpp\
+    handlers/doc_menu_handler.cpp\
     #
-    network/yandex_worker.cpp \
-    network/base_web_worker.cpp \
-    model/toc_mode.cpp
+    network/yandex_worker.cpp\
+    network/base_web_worker.cpp\
+    #
+    network_handlers/yandex_handler.cpp
 
-HEADERS  += \
+
+HEADERS  +=\
     ui/ui.h\
     ui/dialogs.h\
     model/models.h\
     handlers/handlers.h\
     network/network.h\
-    connectors/connectors.h
+    connectors/connectors.h\
+    exceptions/exceptions.h \
+    network_handlers/network_handlers.h
 
 RESOURCES = reader.qrc

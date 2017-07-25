@@ -56,9 +56,18 @@ void YandexWorker::onFinished(QNetworkReply *reply) {
     if(jsonHasError(error))
         return;
 
-    if(response.isObject())
-        emit lookupReady(response);
-    else
+    if(response.isObject()) {
+        switch(response.object().size()) {
+            case 2:
+                emit lookupReady(response);
+                return;
+            case 3:
+                emit translateReady(response);
+                return;
+            default:
+                emit errorSignal("unknow response format");
+        }
+    } else
         emit getLangsReady(response);
 
     reply->close();

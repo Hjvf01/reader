@@ -1,7 +1,7 @@
 #include "models.h"
 
 
-BaseDocument::BaseDocument(QString p, QString n) :
+BaseDocument::BaseDocument(const QString& p, const QString& n) :
         QObject(), path(p), name(n) {}
 
 QString BaseDocument::getName() const { return name; }

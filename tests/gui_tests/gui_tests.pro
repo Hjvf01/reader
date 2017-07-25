@@ -21,6 +21,7 @@ SOURCES += main.cpp\
     ../../src/handlers/main_handler.cpp\
     ../../src/handlers/doc_widget_handler.cpp\
     ../../src/handlers/scene_handler.cpp\
+    ../../src/handlers/doc_menu_handler.cpp\
     #
     ../../src/ui/doc_scene.cpp\
     ../../src/ui/doc_view.cpp\
@@ -30,18 +31,26 @@ SOURCES += main.cpp\
     ../../src/ui/doc_widget.cpp\
     ../../src/ui/scroll_bar.cpp\
     ../../src/ui/page_view.cpp\
+    ../../src/ui/document_menu.cpp\
     #
     ../../src/model/base_document.cpp\
     ../../src/model/page.cpp\
     ../../src/model/pdf_document.cpp\
+    ../../src/model/toc_item.cpp\
+    ../../src/model/toc_model.cpp\
     #
-    mult_page_view_tests.cpp \
-    base_test.cpp \
-    scene_test.cpp \
-    base_doc_widget_test.cpp \
-    single_doc_widget_test.cpp \
-    single_page_view_test.cpp \
-    mult_page_widget_test.cpp
+    ../../src/network/base_web_worker.cpp\
+    ../../src/network/yandex_worker.cpp\
+    #
+    mult_page_view_tests.cpp\
+    base_test.cpp\
+    scene_test.cpp\
+    base_doc_widget_test.cpp\
+    single_doc_widget_test.cpp\
+    single_page_view_test.cpp\
+    mult_page_widget_test.cpp\
+    central_widget_test.cpp \
+    doc_menu_handler_test.cpp
 
 HEADERS +=\
     ../../src/handlers/handlers.h\

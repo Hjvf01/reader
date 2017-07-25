@@ -27,7 +27,7 @@ void MultPageViewTest::testScrollingDown() {
     #define VIEW controller->getView()
 
     int h = VIEW->height();
-    int d_h = DOC_PTR->size()->height();
+    int d_h = DOC_PTR->size().height();
     int loc = controller->getLocation();
 
     while(controller->getLocation() + h < d_h) {

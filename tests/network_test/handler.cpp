@@ -11,19 +11,29 @@ bool Handler::getTranslate() const { return translate; }
 bool Handler::getLookup() const { return lookup; }
 
 
-void Handler::onGetLangs(const QJsonDocument &result) {
+void Handler::onLangsReady(const QMap<QString, QList<QString>>& result) {
     langs = true;
     qDebug() << result;
 }
 
 
-void Handler::onTranslate(const QJsonDocument &result) {
+void Handler::onTranslateReady(const QString& result) {
     translate = true;
     qDebug() << result;
+    dialog.setTranslate(result);
+    if(dialog_shown == false) {
+        dialog.show();
+        dialog_shown = true;
+    }
 }
 
 
-void Handler::onLookup(const QJsonDocument &result) {
+void Handler::onLookupReady(const QString &result) {
     lookup = true;
     qDebug() << result;
+    dialog.setLookup(result);
+    if(dialog_shown == false) {
+        dialog.show();
+        dialog_shown = true;
+    }
 }

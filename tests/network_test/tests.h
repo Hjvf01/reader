@@ -2,16 +2,16 @@
 #define TESTS_H
 
 
-#include <memory>
-using std::shared_ptr;
 #include <vector>
 using std::vector;
 
 #include <QtCore/QObject>
 #include <QtTest/QTest>
 
+#include "../../src/ui/dialogs.h"
 #include "../../src/network/network.h"
 #include "../../src/connectors/connectors.h"
+#include "../../src/network_handlers/network_handlers.h"
 
 
 class Handler : public QObject {
@@ -20,6 +20,9 @@ class Handler : public QObject {
     bool langs = false;
     bool translate = false;
     bool lookup = false;
+    bool dialog_shown = false;
+
+    TrDialog dialog;
 
 public:
     Handler();
@@ -30,23 +33,23 @@ public:
     bool getLookup(void) const;
 
 public slots:
-    void onGetLangs(const QJsonDocument& result);
-    void onTranslate(const QJsonDocument& result);
-    void onLookup(const QJsonDocument& result);
+    void onLangsReady(const QMap<QString, QList<QString>>& results);
+    void onTranslateReady(const QString& result);
+    void onLookupReady(const QString& result);
 };
 
 
 class YandexWorkerTest : public QObject {
     Q_OBJECT
 
-    using Signals =
-        BaseConnector<YandexWorker, Handler>::_Signals<const QJsonDocument&>;
-    using Slots =
-        BaseConnector<YandexWorker, Handler>::_Slots<const QJsonDocument&>;
+    QString text = "fly";
 
     YandexWorker worker;
-    Handler handler;
-    One2One<YandexWorker, Handler> connector;
+    YandexHandler handler;
+    Handler mock_handler;
+
+    One2One<YandexWorker, YandexHandler> connector;
+    One2One<YandexHandler, Handler> mock_connector;
 
 public:
     YandexWorkerTest();

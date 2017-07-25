@@ -6,145 +6,42 @@
 using std::vector;
 
 #include <QtWidgets/QDialog>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QScrollArea>
-#include <QtWidgets/QSizePolicy>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QVBoxLayout>
 
 #include <QtCore/QString>
-#include <QtCore/QJsonObject>
-#include <QtCore/QJsonArray>
-#include <QtCore/QJsonValue>
-#include <QtCore/QList>
-#include <QtCore/QVariant>
 #include <QtCore/QtDebug>
 
 #include <QtGui/QCloseEvent>
 
 
+
+
 class TrDialog : public QDialog {
     Q_OBJECT
 
-    QVBoxLayout box;
-    QLabel translate;
-    QLabel dict;
-    vector<QLabel*> pos;
-    QVBoxLayout pos_box;
+    QVBoxLayout layout;
+    QLabel tr_field;
+    QLabel lookup_field;
 
 signals:
     void closeDialog(void);
 
 public:
-    TrDialog(QWidget* parent=nullptr) : QDialog(parent) {
-        box.addWidget(&translate);
-        box.addWidget(&dict);
-        dict.setLayout(&pos_box);
-        setLayout(&box);
+    TrDialog(QWidget* parent=nullptr);
+    ~TrDialog() override;
 
-        box.setSpacing(0);
-        pos_box.setSpacing(0);
-        setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        pos_box.setSizeConstraint(QLayout::SetFixedSize);
-        box.setSizeConstraint(QLayout::SetFixedSize);
-        setModal(true);
-    }
-
-    void setTranslate(const QJsonObject result) {
-        if(result["text"].isArray()) {
-            QList<QVariant> array = result["text"].toArray().toVariantList();
-            translate.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            translate.setText(
-                "<html><h3>" + array[0].toString() + "</h3></html>"
-            );
-        }
-    }
-
-    QLabel* getPos(const QJsonObject pos) {
-        QString out = "<html>";
-        out += "<strong>" + pos["text"].toString() +
-               ": [" + pos["ts"].toString() + "]" +
-               "<br><small>(" + pos["pos"].toString() + ")</small></strong>";
-        out += "\n<ul>";
-        for(QJsonValue elem: pos["tr"].toArray()) {
-            QJsonObject obj = elem.toObject();
-            out += "<li>" + obj["text"].toString() + "</li>\n";
-        }
-        out += "</ul></html>";
-        return new QLabel(out);
-    }
-
-    void setLookup(const QJsonObject result) {
-        if(result["def"].isArray())
-            for(QJsonValue elem: result["def"].toArray()) {
-                QLabel* p = getPos(elem.toObject());
-                p->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-                pos.push_back(p);
-                pos_box.addWidget(p);
-            }
-    }
-
-    ~TrDialog() {
-        for(QLabel* p: pos) delete p;
-    }
+    void setTranslate(const QString& translate_results);
+    void setLookup(const QString& lookup_results);
 
 protected:
-    void closeEvent(QCloseEvent* event) override {
-        Q_UNUSED(event);
-
-        for(QLabel* lbl: pos) lbl->setText("");
-        for(QLabel* lbl: pos) pos_box.removeWidget(lbl);
-        emit closeDialog();
-    }
+    void closeEvent(QCloseEvent*) override;
 };
 
 
 
-class FindText : public QDialog {
-    Q_OBJECT
-
-    QHBoxLayout main;
-    QLineEdit field;
-    QPushButton ok;
-    bool flag = false;
-
-public:
-    FindText() {
-         main.addWidget(&field);
-         field.setMinimumWidth(200);
-         main.addWidget(&ok);
-         ok.setIcon(QIcon(":/find.png"));
-         ok.setFlat(true);
-         setLayout(&main);
-         main.setSizeConstraint(QLayout::SetFixedSize);
-         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-         setModal(true);
-
-         connect(&ok, &QPushButton::pressed, [this](){
-            if(flag == false) {
-                emit this->findText(this->field.text());
-                flag = true;
-            }
-         });
-    }
-
-    ~FindText() = default;
-
-protected:
-    void closeEvent(QCloseEvent* event) override {
-        Q_UNUSED(event);
-
-        flag = false;
-        emit closeDialog();
-    }
-
-signals:
-    void findText(const QString text);
-    void closeDialog();
-
-};
 
 
 class HelpDialog : public QDialog {

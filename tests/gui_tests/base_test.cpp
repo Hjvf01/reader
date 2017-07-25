@@ -18,7 +18,7 @@ BaseTest::BaseTest(const QString& name, VerbosityLevel lvl) : level(lvl) {
 void BaseTest::compareRect() {
     cout << "\t\t\t" << doc.get()->getName().toStdString() << endl;
     QRectF doc_rect(0, 0,
-        doc.get()->size()->width(), doc.get()->size()->height());
+        doc.get()->size().width(), doc.get()->size().height());
     QVERIFY(
         controller->getView()->sceneRect() ==
         controller->getView()->scene()->sceneRect()
@@ -36,5 +36,5 @@ BaseTest::~BaseTest() {
 }
 
 double BaseTest::getCurrentLocation(int loc) {
-    return loc / ((double)doc->size()->height() / 100);
+    return loc / ((double)doc->size().height() / 100);
 }

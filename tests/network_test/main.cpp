@@ -1,3 +1,6 @@
+#include <memory>
+using std::shared_ptr;
+
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QPushButton>

@@ -20,6 +20,7 @@ using std::vector;
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QTreeView>
+#include <QtWidgets/QListView>
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QPushButton>
 
@@ -38,6 +39,8 @@ using std::vector;
 #include <QtCore/Qt>
 
 
+
+
 class PageView : public QGraphicsPixmapItem {
     size_t index;
 
@@ -47,6 +50,8 @@ public:
 
     size_t getIndex(void) const;
 };
+
+
 
 
 class DocScene : public QGraphicsScene {
@@ -62,13 +67,11 @@ public:
     ~DocScene();
 
     void setHightLight(QRectF rect);
-    void setHightLights(vector<QRectF> rects);
+    void setHightLights(const vector<QRectF>& rects);
     QGraphicsRectItem* getHightlight(void) const;
 
     void eraseHightlight(void);
     void eraseHightlights(void);
-
-    const vector<DbClick> getSceneSignals(void) const;
 
 protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event) override;
@@ -76,6 +79,8 @@ protected:
 signals:
     void doubleClick(const QPointF& point);
 };
+
+
 
 
 class ScrollBar : public QScrollBar {
@@ -86,6 +91,8 @@ public:
     ScrollBar();
     ~ScrollBar() override;
 };
+
+
 
 
 class DocView : public QGraphicsView {
@@ -111,6 +118,8 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
 };
+
+
 
 
 class DocToolBar : public QToolBar {
@@ -159,8 +168,12 @@ public:
     unsigned int getComboBoxesAmount(void) const;
     unsigned int getActionsAmount(void) const;
 
-    void setPageNums(const QString current, const QString last);
-    void setCurrentPage(const QString num);
+    void setPageNums(const QString& current, const QString& last);
+    void setCurrentPage(const QString& num);
+
+    QLineEdit* getPageLine(void) { return &current_page; }
+
+    void initValidator(unsigned int i);
 
 private:
     void initScaleMenu(void);
@@ -172,11 +185,33 @@ signals:
 };
 
 
-class DocumentMenu : public QDockWidget {};
+
+
+class DocumentMenu : public QDockWidget {
+    Q_OBJECT
+
+    QTreeView* toc_view = new QTreeView;
+    QGraphicsView* minimap_view = new QGraphicsView;
+    QListView* bookmark_view = new QListView;
+    QTabWidget* tab_widget = new QTabWidget;
+
+public:
+    DocumentMenu(QWidget* parent=nullptr);
+    ~DocumentMenu() override;
+
+    QTreeView* getTocView(void) const;
+    QGraphicsView* getMinimap(void) const;
+    QListView* getBookmarksView(void) const;
+    QTabWidget* getTabWidget(void) const;
+};
+
+
 
 
 using Actions = vector<QAction*>;
 using ShortCuts = vector<QKeySequence>;
+
+
 
 
 class DocWidget : public QMainWindow {
@@ -224,7 +259,11 @@ public:
 };
 
 
+
+
 using MenuList = vector<QMenu*>;
+
+
 
 
 class MenuBar : public QMenuBar {
@@ -295,6 +334,8 @@ public:
     unsigned int toolGroupSize(void) const;
     unsigned int helpGroupSize(void) const;
 };
+
+
 
 
 class MainWindow : public QMainWindow {

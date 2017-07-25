@@ -63,7 +63,7 @@ void DocHandler::resize(int new_value) {
     );
 
     handler->getScene()->setSceneRect(
-        0, 0, DOC_PTR->size()->width(), DOC_PTR->size()->height()
+        0, 0, DOC_PTR->size().width(), DOC_PTR->size().height()
     );
 
     fillBuffer(indexes);
@@ -101,7 +101,7 @@ void DocHandler::drawNext(unsigned int index) {
     */
     PagePtr page = new PageView(DOC_PTR->page(index)->render(), index);
 
-    page->setOffset(DOC_PTR->page(index)->offset());
+    page->setOffset(DOC_PTR->page(index)->getOffset());
     handler->getScene()->addItem(page);
     pages.push_back(page);
 
@@ -118,7 +118,7 @@ void DocHandler::drawPrev(unsigned int index) {
     */
     PagePtr page = new PageView(DOC_PTR->page(index)->render(), index);
 
-    page->setOffset(DOC_PTR->page(index)->offset());
+    page->setOffset(DOC_PTR->page(index)->getOffset());
     handler->getScene()->addItem(page);
     pages.push_front(page);
 
@@ -153,7 +153,7 @@ void DocHandler::start() {
     );
     document.get()->init();
     handler->getScene()->setSceneRect(
-        0, 0, DOC_SIZE->width(), DOC_SIZE->height()
+        0, 0, DOC_SIZE.width(), DOC_SIZE.height()
     );
     ui->setScene(handler->getScene());
 
@@ -263,6 +263,7 @@ void DocHandler::goTo(unsigned int index) {
         for(unsigned int i = last - buf_size; i < len; i++)
             drawNext(i);
     centerOnCurrentPage();
+    emit pageChange(current);
 }
 
 
@@ -270,8 +271,8 @@ void DocHandler::centerOnCurrentPage() const {
     for(PagePtr page: pages)
         if(page != nullptr && page->getIndex() == current)
             ui->centerOn(
-                document.get()->page(current)->topX(),
-                document.get()->page(current)->topY()
+                document.get()->page(current)->centerX(),
+                document.get()->page(current)->centerY()
             );
 }
 

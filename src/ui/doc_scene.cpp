@@ -30,7 +30,7 @@ void DocScene::setHightLight(QRectF rect) {
     addItem(select_box);
 }
 
-void DocScene::setHightLights(vector<QRectF> rects) {
+void DocScene::setHightLights(const vector<QRectF>& rects) {
     for(QRectF rect: rects) {
         auto item = new QGraphicsRectItem(rect);
         item->setBrush(QBrush(QColor(255, 0, 0, 35)));
@@ -63,12 +63,4 @@ void DocScene::eraseHightlights() {
     select_boxes.clear();
 
     assert(select_boxes.size() == 0);
-}
-
-
-const vector<void (DocScene::*)(const QPointF&)> DocScene::getSceneSignals()
-        const {
-    return {
-        &DocScene::doubleClick,
-    };
 }

@@ -18,6 +18,8 @@ using std::forward;
 #include "../network/network.h"
 #include "../ui/dialogs.h"
 #include "../connectors/connectors.h"
+#include "../network_handlers/network_handlers.h"
+
 
 
 enum class SelectMode {
@@ -29,12 +31,11 @@ enum class SelectMode {
 };
 
 
+
+
 using DocPtr = shared_ptr<BaseDocument>;
 class SceneHandler : public QObject {
     Q_OBJECT
-
-    using Parametr = QPair<QString, QString>;
-    using Parametrs = QList<Parametr>;
 
     static SelectMode select_mode;
 
@@ -43,10 +44,16 @@ class SceneHandler : public QObject {
 
     DocScene* scene;
     DocPtr document;
+    bool dialog_shown = false;
+
     TrDialog dialog;
-    bool dialog_shown;
+    YandexWorker translator;
+    YandexHandler network_handler;
 
     One2One<DocScene, SceneHandler> connector;
+    One2One<SceneHandler, YandexWorker> scene2network;
+    One2One<YandexWorker, YandexHandler> network2handler;
+    One2One<YandexHandler, SceneHandler> handler2this;
 
 public:
     SceneHandler(const DocPtr& doc);
@@ -60,8 +67,8 @@ public:
     void setLangTo(const QString& lang);
 
 signals:
-    void translate(const QString&, const Parametrs&);
-    void lookup(const QString&, const Parametrs&);
+    void translate(const Parameters&);
+    void lookup(const Parameters&);
     void drawFillRect(const QRectF&);
     void drawSolidLine(const QRectF&);
     void drawDashedLine(const QRectF&);
@@ -70,14 +77,17 @@ signals:
 private slots:
     void onDoubleClick(const QPointF& point);
     void onError(const QString& error_msg);
-    void onTranslateReady(const QJsonObject& result);
-    void onLookupReady(const QJsonObject& result);
+    void onTranslateReady(const QString& result);
+    void onLookupReady(const QString& result);
+    void onDialogClose(void);
 
 private:
     bool pointBeyondScene(const QPointF& point) const;
     void initConnectors(void);
     void emitter(const QRectF& box, const QString& text);
 };
+
+
 
 
 class DocHandler : public QObject {
@@ -144,29 +154,51 @@ signals:
 };
 
 
-class DocMenuHandler : public QObject {};
+
+
+class DocMenuHandler : public QObject {
+    Q_OBJECT
+
+    DocumentMenu* ui;
+    TocModel* toc_model;
+
+public:
+    DocMenuHandler(const DocPtr& document);
+    ~DocMenuHandler() override;
+
+    DocumentMenu* getDocumentMenu(void) const { return ui; }
+
+signals:
+    void changePage(const QString& page);
+
+private slots:
+    void onActivated(const QModelIndex& item);
+
+private:
+    void initConnectors(void);
+};
+
+
 
 
 class DocWidgetHandler : public QObject {
     Q_OBJECT
 
-    using Parametr = QPair<QString, QString>;
-    using Parametrs = QList<Parametr>;
+    using Langs = QMap<QString, QList<QString>>;
 
     DocWidget* ui;
     DocHandler* handler;
+    DocMenuHandler* doc_menu_h;
 
     DocPtr document;
 
-    YandexWorker trnsl;
-    FindText dialog;
+    Langs dict_langs;
+    YandexWorker langs;
+    YandexHandler network_handler;
 
     Many2One<QAction, DocWidgetHandler> context_menu_connector;
     Many2One<QComboBox, DocWidgetHandler> combo_box_connector;
     Many2One<QAction, DocWidgetHandler> tool_bar_connector;
-    One2One<SceneHandler, YandexWorker> trnsl_connector;
-
-    QMap<QString, QStringList> dict_langs;
 
 public:
     DocWidgetHandler(const QUrl& path);
@@ -180,11 +212,7 @@ private:
     void initConnectors(void);
 
 signals:
-    void translate(const QString& text, const Parametrs& parametrs);
-    void lookup(const QString& text, const Parametrs& parametrs);
-
-    void getTrLangs(void);
-    void getDictLangs(void);
+    void getLangs(void);
 
 private slots:
     void onAbsoluteScaleChanged(const QString& value);
@@ -192,12 +220,11 @@ private slots:
     void onTrFromChanged(const QString& lang_name);
     void onTrToChanged(const QString& lang_name);
 
-    void onDictLangsReady(const QJsonArray& langs);
+    void onDictLangsReady(const Langs& langs);
     void onError(const QString& error_msg);
 
     void onPageChange(unsigned int index);
-
-    void onChangePage(const QString& page);
+    void onPageChange(const QString& page);
 
     void onZoomIn(bool);
     void onZoomOut(bool);
@@ -208,11 +235,13 @@ private slots:
     void onFullScreen(bool);
 
     void onFind(const QString& text);
-    void onFindDialogShow(bool);
     void onFindDialogClose(void);
+    void onFindDialogShow(bool);
 
     void onReload(bool);
 };
+
+
 
 
 using DocWidgetPtr = shared_ptr<DocWidgetHandler>;
@@ -236,9 +265,10 @@ public:
 
     void initConnectors(void);
 
-private:
     void open(const QList<QUrl>& files);
     void close(int index);
+
+    MainWindow* getWindow(void) const;
 
 private slots:
     void onOpen(bool);

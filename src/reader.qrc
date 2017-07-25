@@ -20,6 +20,10 @@
     <file alias="tr_separator.png">../icons/tools_menu/forward.png</file>
     <file alias="page.png">../icons/tools_menu/page.png</file>
     <file alias="reload.png">../icons/tools_menu/refresh.png</file>
+
+    <file alias="book.png">../icons/document_menu/book.png</file>
+    <file alias="bookmark.png">../icons/document_menu/bookmark.png</file>
+    <file alias="view.png">../icons/document_menu/view.png</file>
 </qresource>
 
 </RCC>
