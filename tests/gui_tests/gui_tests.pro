@@ -16,7 +16,9 @@ linux-g++ {
     message(Linux-g++)
 }
 
-SOURCES += main.cpp\
+SOURCES +=\
+    main.cpp\
+    #
     ../../src/handlers/doc_handler.cpp\
     ../../src/handlers/main_handler.cpp\
     ../../src/handlers/doc_widget_handler.cpp\
@@ -32,6 +34,8 @@ SOURCES += main.cpp\
     ../../src/ui/scroll_bar.cpp\
     ../../src/ui/page_view.cpp\
     ../../src/ui/document_menu.cpp\
+    ../../src/ui/tr_dialog.cpp\
+    ../../src/ui/find_dialog.cpp\
     #
     ../../src/model/base_document.cpp\
     ../../src/model/page.cpp\
@@ -42,6 +46,8 @@ SOURCES += main.cpp\
     ../../src/network/base_web_worker.cpp\
     ../../src/network/yandex_worker.cpp\
     #
+    ../../src/network_handlers/yandex_handler.cpp\
+    #
     mult_page_view_tests.cpp\
     base_test.cpp\
     scene_test.cpp\
@@ -49,7 +55,7 @@ SOURCES += main.cpp\
     single_doc_widget_test.cpp\
     single_page_view_test.cpp\
     mult_page_widget_test.cpp\
-    central_widget_test.cpp \
+    central_widget_test.cpp\
     doc_menu_handler_test.cpp
 
 HEADERS +=\
@@ -58,12 +64,13 @@ HEADERS +=\
     ../../src/ui/ui.h\
     ../../src/model/models.h\
     ../../src/network/network.h\
+    ../../src/network_handlers/network_handlers.h\
     ../../src/connectors/connectors.h\
     tests.h
 
 CONFIG += debug
 
-QMAKE_CXX += -O1
+QMAKE_CXX += -O3
 
 
 RESOURCES = reader.qrc

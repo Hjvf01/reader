@@ -192,6 +192,8 @@ class DocWidgetHandler : public QObject {
 
     DocPtr document;
 
+    FindDialog find_dialog;
+
     Langs dict_langs;
     YandexWorker langs;
     YandexHandler network_handler;

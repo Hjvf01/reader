@@ -26,19 +26,6 @@ using Index = unsigned int;
 
 template <typename Sender, typename Receiver> class BaseConnector {
 public:
-
-    template <typename Type, typename... Rest>
-    using _Signals = Signals<Sender, Type, Rest...>;
-
-    template <typename Type, typename... Rest>
-    using _Slots = Slots<Receiver, Type, Rest...>;
-
-    using VoidSignals = vector<void (Sender::*)(void)>;
-    using VoidSlots = vector<void (Receiver::*)(void)>;
-
-
-
-
     virtual void disconnect(void) const = 0;
 
     virtual void connect(

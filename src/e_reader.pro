@@ -41,7 +41,9 @@ SOURCES +=\
     network/yandex_worker.cpp\
     network/base_web_worker.cpp\
     #
-    network_handlers/yandex_handler.cpp
+    network_handlers/yandex_handler.cpp \
+    ui/find_dialog.cpp \
+    ui/help_dialog.cpp
 
 
 HEADERS  +=\

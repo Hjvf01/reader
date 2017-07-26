@@ -108,6 +108,15 @@ void DocWidgetHandler::initConnectors() {
         &network_handler, &YandexHandler::langsReady,
         this, &DocWidgetHandler::onDictLangsReady
     );
+
+    connect(
+        &find_dialog, &FindDialog::find, this, &DocWidgetHandler::onFind
+    );
+
+    connect(
+        &find_dialog, &FindDialog::closeDialog,
+        this, &DocWidgetHandler::onFindDialogClose
+    );
 }
 
 
@@ -207,24 +216,28 @@ void DocWidgetHandler::onFullScreen(bool) {}
 void DocWidgetHandler::onFind(const QString& text) {
     vector<pair<QRectF, QString>> results;
     vector<unsigned int> indexes = handler->getIndexes();
-/*
-    for(unsigned int i: indexes)
-        for(auto result: handler->getDoc()->page(i)->findAll(text)) {
+
+    for(unsigned int i: indexes) {
+        auto _results = document.get()->page(i)->findAll(text);
+        for(auto result: _results) {
             results.push_back(result);
         }
+    }
 
     vector<QRectF> boxes;
     for(auto result: results)
         boxes.push_back(result.first);
 
-    ui->getView()->getScene()->setHightLights(boxes);*/
+    handler->getSceneHandler()->getScene()->setHightLights(boxes);
 }
 
 void DocWidgetHandler::onFindDialogClose() {
-    //ui->getView()->getScene()->eraseHightlights();
+    handler->getSceneHandler()->getScene()->eraseHightlights();
 }
 
-void DocWidgetHandler::onFindDialogShow(bool) {}
+void DocWidgetHandler::onFindDialogShow(bool) {
+    find_dialog.show();
+}
 
 
 void DocWidgetHandler::onReload(bool) {

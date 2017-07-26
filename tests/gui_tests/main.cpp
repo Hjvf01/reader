@@ -18,9 +18,9 @@ int main(int argc, char** argv) {
     VerbosityLevel lvl = VerbosityLevel::verbose;
 
     const Tests tests = {
-        //TestPtr(new SceneTest(lvl)),
-        //TestPtr(new SinglePageViewTest("/single_page.pdf", lvl)),
-        //TestPtr(new MultPageViewTest("/med_doc.pdf", lvl)),
+        TestPtr(new SceneTest(lvl)),
+        TestPtr(new SinglePageViewTest("/single_page.pdf", lvl)),
+        TestPtr(new MultPageViewTest("/med_doc.pdf", lvl)),
         TestPtr(new SingleDocWidgetTest("/single_page.pdf", lvl)),
         TestPtr(new MultDocWidgetTest("/huge_doc.pdf", lvl)),
         TestPtr(new DocMenuHandlerTest),
@@ -36,6 +36,10 @@ int main(int argc, char** argv) {
     QTreeView view;
     view.setModel(&model);
     view.show();
+
+
+    FindDialog find;
+    find.show();
 
     QWidget close_widget;
     QVBoxLayout layout;

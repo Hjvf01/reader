@@ -82,6 +82,12 @@ void SceneHandler::onDoubleClick(const QPointF& point) {
     if(pointBeyondScene(point))
         return;
 
+    if(
+        SceneHandler::select_mode == SelectMode::translate &&
+        lang_from == QString() &&
+        lang_to == QString()
+    ) return;
+
     QList<QGraphicsItem*> items = scene->items();
     for(QGraphicsItem* item: items) {
         if(item->contains(point)) {
@@ -147,8 +153,8 @@ void SceneHandler::emitter(const QRectF &box, const QString& text) {
             );
             emit lookup(
                 Parameters{
-                    Parameter{"lang", lang_from + QString("-") + lang_to},
-                    Parameter{QString("ui"), lang_to},
+                    Parameter{"lang", lang_from + "-" + lang_to},
+                    Parameter{"ui", lang_to},
                     Parameter{"text", text}
                 }
             );
