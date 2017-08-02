@@ -1,7 +1,11 @@
 #include "ui.h"
 
 
-DocToolBar::DocToolBar(QWidget *parent) : QToolBar(parent) {
+DocToolBar::DocToolBar(QAction* hide, QWidget *parent) : QToolBar(parent) {
+    hide->setIcon(QIcon(":/book"));
+    addAction(hide);
+    addSeparator();
+
     initScaleMenu();
     addSeparator();
 
@@ -58,7 +62,7 @@ vector<QComboBox*> DocToolBar::getComboBoxes() const {
 vector<QAction*> DocToolBar::getActions() const {
     return {
         zoom_in, zoom_out, reload, fst_page, prev_page, next_page, last_page,
-        find
+        find,
     };
 }
 

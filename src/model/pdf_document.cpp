@@ -97,6 +97,11 @@ void PDFDocument::build() {
 QSize PDFDocument::size() const { return doc_size; }
 
 
+QRectF PDFDocument::documentRect() const {
+    return QRectF(0, 0, doc_size.width(), doc_size.height());
+}
+
+
 PDFPage* PDFDocument::page(unsigned int index) const {
     if(index > pages.size())
         throw PageOutOfRange(

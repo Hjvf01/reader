@@ -1,14 +1,16 @@
 #include "ui.h"
 
 
-DocumentMenu::DocumentMenu(QWidget *parent) : QDockWidget(parent) {
+DocumentMenu::DocumentMenu(DocView* m, QWidget *parent) : QDockWidget(parent) {
+    minimap_view = m;
+
     setWidget(tab_widget);
     tab_widget->addTab(toc_view, QIcon(":/book.png"), "");
     tab_widget->addTab(minimap_view, QIcon(":/view.png"), "");
     tab_widget->addTab(bookmark_view, QIcon(":/bookmark.png"), "");
     tab_widget->setMovable(false);
     tab_widget->setTabPosition(QTabWidget::TabPosition::West);
-    setFeatures(QDockWidget::NoDockWidgetFeatures);
+    setFeatures(QDockWidget::DockWidgetClosable);
 }
 
 DocumentMenu::~DocumentMenu() {}

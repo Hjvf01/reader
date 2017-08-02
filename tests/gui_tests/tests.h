@@ -32,7 +32,7 @@ using std::abs;
 #include "../../src/handlers/handlers.h"
 
 
-static const QString base = "/home/roma/ws/C/scrs/e_reader/tests/samples";
+static const QString BASE = "/home/roma/ws/C/scrs/e_reader/tests/samples";
 
 
 static const double EPSILON = 0.01;
@@ -207,12 +207,12 @@ class CentralWidgetTest : public QObject {
     Q_OBJECT
 
     const QList<QUrl> paths = {
-        QUrl(base + "/single_page.pdf"),
-        QUrl(base + "/small_doc.pdf"),
-        QUrl(base + "/large_doc.pdf"),
-        QUrl(base + "/1.The Fellowship of the Ring.pdf"),
-        QUrl(base + "/2.The Two Towers.pdf"),
-        QUrl(base + "/3.The Return of the King .pdf"),
+        QUrl(BASE + "/single_page.pdf"),
+        QUrl(BASE + "/small_doc.pdf"),
+        QUrl(BASE + "/large_doc.pdf"),
+        QUrl(BASE + "/1.The Fellowship of the Ring.pdf"),
+        QUrl(BASE + "/2.The Two Towers.pdf"),
+        QUrl(BASE + "/3.The Return of the King .pdf"),
     };
 
     MainHandler handler;

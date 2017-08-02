@@ -84,8 +84,7 @@ void SceneHandler::onDoubleClick(const QPointF& point) {
 
     if(
         SceneHandler::select_mode == SelectMode::translate &&
-        lang_from == QString() &&
-        lang_to == QString()
+        lang_from == QString() && lang_to == QString()
     ) return;
 
     QList<QGraphicsItem*> items = scene->items();

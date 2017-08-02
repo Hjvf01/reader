@@ -18,28 +18,17 @@ int main(int argc, char** argv) {
     VerbosityLevel lvl = VerbosityLevel::verbose;
 
     const Tests tests = {
-        TestPtr(new SceneTest(lvl)),
-        TestPtr(new SinglePageViewTest("/single_page.pdf", lvl)),
-        TestPtr(new MultPageViewTest("/med_doc.pdf", lvl)),
-        TestPtr(new SingleDocWidgetTest("/single_page.pdf", lvl)),
-        TestPtr(new MultDocWidgetTest("/huge_doc.pdf", lvl)),
+        //TestPtr(new SceneTest(lvl)),
+        //TestPtr(new SinglePageViewTest("/single_page.pdf", lvl)),
+        //TestPtr(new MultPageViewTest("/med_doc.pdf", lvl)),
+        //TestPtr(new SingleDocWidgetTest("/single_page.pdf", lvl)),
+        //TestPtr(new MultDocWidgetTest("/huge_doc.pdf", lvl)),
         TestPtr(new DocMenuHandlerTest),
-        TestPtr(new CentralWidgetTest),
+        //TestPtr(new CentralWidgetTest),
     };
 
-    for(TestPtr test: tests)
+    for(const TestPtr& test: tests)
         QTest::qExec(test.get(), QStringList());
-
-    QUrl path(base + "/huge_doc.pdf");
-    auto document = PDFDocPtr(Poppler::Document::load(path.path()));
-    TocModel model(document, path.fileName());
-    QTreeView view;
-    view.setModel(&model);
-    view.show();
-
-
-    FindDialog find;
-    find.show();
 
     QWidget close_widget;
     QVBoxLayout layout;
@@ -49,6 +38,7 @@ int main(int argc, char** argv) {
     close.setText("Close");
     QObject::connect(&close, &QPushButton::pressed, [](){ qApp->quit(); });
     close_widget.setFixedSize(150, 50);
+    close_widget.setWindowTitle("Close");
     close_widget.show();
 
     int res = app.exec();

@@ -1,5 +1,6 @@
 #include <cassert>
 
+
 #include "models.h"
 
 
@@ -10,16 +11,28 @@ TocModel::TocModel(const PDFDocPtr& doc, const QString &name)
         : QStandardItemModel(), document(doc) {
 
     setHorizontalHeaderLabels(QStringList(name));
-    init(document.get()->toc());
+    _toc = document.get()->toc();
+    init(_toc);
 }
 
-TocModel::~TocModel() {}
+TocModel::~TocModel() {
+    int row_count = rowCount();
+    for(int i = 0; i < row_count; i++) {
+        QList<QStandardItem*> _list = takeRow(i);
+        for(QStandardItem* item: _list) {
+            TocModel* _item = dynamic_cast<TocModel*>(item);
+            delete _item;
+        }
+    }
+    delete _toc;
+}
 
 
 void TocModel::set(const PDFDocPtr& doc, const QString &name) {
     document = doc;
     setHorizontalHeaderLabels(QStringList(name));
-    init(document.get()->toc());
+    _toc = document.get()->toc();
+    init(_toc);
 }
 
 
@@ -43,11 +56,10 @@ void TocModel::build(QDomNode root, QStandardItem *model) {
                     elem.attributeNode("Destination").value()
                 );
         } else {
-            new_item = new TocItem(
-                elem.tagName(),
-                document->linkDestination(
-                    elem.attributeNode("DestinationName").value()
-            ));
+            Poppler::LinkDestination* link = document->linkDestination(
+                elem.attributeNode("DestinationName").value()
+            );
+            new_item = new TocItem(elem.tagName(), link);
         }
         model->appendRow(new_item);
         new_item->setEditable(false);

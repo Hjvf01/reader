@@ -2,7 +2,19 @@
 
 
 DocWidget::DocWidget(QWidget *parent) : QMainWindow(parent) {
-    addToolBar(tool_bar);
+    const ShortCuts context_menu_short = {
+        QKeySequence(Qt::CTRL + Qt::Key_F),
+        QKeySequence(),
+        QKeySequence(Qt::Key_Home),
+        QKeySequence(Qt::CTRL + Qt::Key_Left),
+        QKeySequence(Qt::CTRL + Qt::Key_Right),
+        QKeySequence(Qt::Key_End),
+        QKeySequence(),
+        QKeySequence(Qt::CTRL + Qt::Key_Equal),
+        QKeySequence(Qt::CTRL + Qt::Key_Minus),
+        QKeySequence(),
+        QKeySequence(Qt::CTRL + Qt::Key_F11)
+    };
 
     for(QAction* act: context_menu)
         addAction(act);
@@ -16,10 +28,11 @@ DocWidget::DocWidget(QWidget *parent) : QMainWindow(parent) {
     setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
-DocToolBar* DocWidget::getToolBar() const { return tool_bar; }
+
 unsigned int DocWidget::getContextMenuSize() const { return 8; }
 
-const vector<QAction*> DocWidget::getContextMenu() const {
+
+vector<QAction*> DocWidget::getContextMenu() const {
     return {
         context_menu[0], context_menu[2], context_menu[3],
         context_menu[4], context_menu[5], context_menu[7],
@@ -30,6 +43,4 @@ const vector<QAction*> DocWidget::getContextMenu() const {
 
 DocWidget::~DocWidget() {
     for(auto act: context_menu) delete act;
-    //delete view;
-    delete tool_bar;
 }

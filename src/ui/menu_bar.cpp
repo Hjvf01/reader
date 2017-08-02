@@ -4,6 +4,24 @@
 
 
 MenuBar::MenuBar(QMainWindow* parent) : QMenuBar(parent) {
+    const ShortCuts file_group_short = {
+        QKeySequence("Ctrl+O"), QKeySequence("Ctrl+P"),
+        QKeySequence("Alt+Return"), QKeySequence("Ctrl+W"),
+        QKeySequence("Ctrl+Q"),
+    };
+    const ShortCuts view_group_short = {
+        QKeySequence(Qt::CTRL + Qt::Key_Equal),
+        QKeySequence(Qt::CTRL + Qt::Key_Minus),
+        QKeySequence(Qt::Key_Home),
+        QKeySequence(Qt::CTRL + Qt::Key_Left),
+        QKeySequence(Qt::CTRL + Qt::Key_Right),
+        QKeySequence(Qt::Key_End),
+        QKeySequence(Qt::ALT + Qt::Key_F11)
+    };
+    const ShortCuts help_group_short = {
+        QKeySequence("Ctrl+H"), QKeySequence()
+    };
+
     assert(file_group_actions.size() == file_group_short.size());
     assert(view_group_actions.size() == view_group_short.size());
 

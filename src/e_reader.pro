@@ -43,7 +43,8 @@ SOURCES +=\
     #
     network_handlers/yandex_handler.cpp \
     ui/find_dialog.cpp \
-    ui/help_dialog.cpp
+    ui/help_dialog.cpp \
+    handlers/minimap_handler.cpp
 
 
 HEADERS  +=\

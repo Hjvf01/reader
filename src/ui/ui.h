@@ -40,15 +40,20 @@ using std::vector;
 
 
 
+using Index = unsigned int;
+
+
+
 
 class PageView : public QGraphicsPixmapItem {
-    size_t index;
+    Index index;
 
 public:
-    PageView(QPixmap pix, size_t i);
+    PageView(const QPixmap& pix, Index i);
     ~PageView() override;
 
-    size_t getIndex(void) const;
+    Index getIndex(void) const;
+    void setIndex(Index _index) { index = _index; }
 };
 
 
@@ -64,9 +69,10 @@ class DocScene : public QGraphicsScene {
 
 public:
     DocScene();
+    DocScene(const QRectF& scene_rect, QWidget* parent);
     ~DocScene();
 
-    void setHightLight(QRectF rect);
+    void setHightLight(const QRectF& rect);
     void setHightLights(const vector<QRectF>& rects);
     QGraphicsRectItem* getHightlight(void) const;
 
@@ -152,10 +158,12 @@ class DocToolBar : public QToolBar {
             *last_page,
             *find;
 
+    QAction* bookmark_btn;
+
     QIntValidator page_validator;
 
 public:
-    DocToolBar(QWidget* parent=nullptr);
+    DocToolBar(QAction* hide_menu, QWidget* parent=nullptr);
     ~DocToolBar() override;
 
     QComboBox* getScaleBox(void) const;
@@ -191,12 +199,12 @@ class DocumentMenu : public QDockWidget {
     Q_OBJECT
 
     QTreeView* toc_view = new QTreeView;
-    QGraphicsView* minimap_view = new QGraphicsView;
+    DocView* minimap_view;
     QListView* bookmark_view = new QListView;
     QTabWidget* tab_widget = new QTabWidget;
 
 public:
-    DocumentMenu(QWidget* parent=nullptr);
+    DocumentMenu(DocView* minimap, QWidget* parent=nullptr);
     ~DocumentMenu() override;
 
     QTreeView* getTocView(void) const;
@@ -217,8 +225,6 @@ using ShortCuts = vector<QKeySequence>;
 class DocWidget : public QMainWindow {
     Q_OBJECT
 
-    DocToolBar* tool_bar = new DocToolBar;
-
     const Actions context_menu = {
         new QAction(QIcon(":/find.png"), "Find"),
         new QAction(),
@@ -232,30 +238,14 @@ class DocWidget : public QMainWindow {
         new QAction(),
         new QAction(QIcon(":/fullscreen.png"), "Full Screen")
     };
-    const ShortCuts context_menu_short = {
-        QKeySequence(Qt::CTRL + Qt::Key_F),
-        QKeySequence(),
-        QKeySequence(Qt::Key_Home),
-        QKeySequence(Qt::CTRL + Qt::Key_Left),
-        QKeySequence(Qt::CTRL + Qt::Key_Right),
-        QKeySequence(Qt::Key_End),
-        QKeySequence(),
-        QKeySequence(Qt::CTRL + Qt::Key_Equal),
-        QKeySequence(Qt::CTRL + Qt::Key_Minus),
-        QKeySequence(),
-        QKeySequence(Qt::CTRL + Qt::Key_F11)
-    };
-
 
 public:
     DocWidget(QWidget* parent=nullptr);
     ~DocWidget() override;
 
     DocToolBar* getToolBar(void) const;
-    const vector<QAction*> getContextMenu(void) const;
+    vector<QAction*> getContextMenu(void) const;
     unsigned int getContextMenuSize(void) const;
-
-    void setLeftDock(QWidget* widget);
 };
 
 
@@ -288,7 +278,7 @@ class MenuBar : public QMenuBar {
         new QAction(QIcon(":/zoom_out.png"), "Zoom-out"),
         new QAction(QIcon(":/first_page.png"), "First Page"),
         new QAction(QIcon(":/next_page.png"), "Next Page"),
-        new QAction(QIcon(":/prev_page.pnt"), "Previous Page"),
+        new QAction(QIcon(":/prev_page.png"), "Previous Page"),
         new QAction(QIcon(":/last_page.png"), "Last Page"),
         new QAction(QIcon(":/fullscreen.png"), "Full Screen")
     };
@@ -300,24 +290,6 @@ class MenuBar : public QMenuBar {
     };
     const Actions help_group_actions = {
         new QAction("Help"), new QAction("About")
-    };
-
-    const ShortCuts file_group_short = {
-        QKeySequence("Ctrl+O"), QKeySequence("Ctrl+P"),
-        QKeySequence("Alt+Return"), QKeySequence("Ctrl+W"),
-        QKeySequence("Ctrl+Q"),
-    };
-    const ShortCuts view_group_short = {
-        QKeySequence(Qt::CTRL + Qt::Key_Equal),
-        QKeySequence(Qt::CTRL + Qt::Key_Minus),
-        QKeySequence(Qt::Key_Home),
-        QKeySequence(Qt::CTRL + Qt::Key_Left),
-        QKeySequence(Qt::CTRL + Qt::Key_Right),
-        QKeySequence(Qt::Key_End),
-        QKeySequence(Qt::ALT + Qt::Key_F11)
-    };
-    const ShortCuts help_group_short = {
-        QKeySequence("Ctrl+H"), QKeySequence()
     };
 
 public:

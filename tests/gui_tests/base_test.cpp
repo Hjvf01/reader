@@ -2,7 +2,7 @@
 
 
 BaseTest::BaseTest(const QString& name, VerbosityLevel lvl) : level(lvl) {
-    QUrl path(base + name);
+    QUrl path(BASE + name);
     doc = DocPtr(
         new PDFDocument(path.path(), path.fileName())
     );

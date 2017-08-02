@@ -4,9 +4,9 @@
 DocMenuHandlerTest::DocMenuHandlerTest() : QObject() {
     window = new QMainWindow;
 
-    QUrl path(base + "/med_doc.pdf");
+    QUrl path(BASE + "/med_doc.pdf");
     doc = DocPtr(new PDFDocument(path.path(), path.fileName()));
-    handler = new DocMenuHandler(doc);
+    handler = new DocMenuHandler(path);
     window->addDockWidget(Qt::LeftDockWidgetArea, handler->getDocumentMenu());
     window->show();
 }

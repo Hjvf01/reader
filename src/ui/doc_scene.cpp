@@ -10,6 +10,11 @@ DocScene::DocScene() : QGraphicsScene() {
     setBackgroundBrush(Qt::darkGray);
 }
 
+DocScene::DocScene(const QRectF &scene_rect, QWidget *parent) :
+        QGraphicsScene(scene_rect, parent) {
+    setBackgroundBrush(Qt::darkCyan);
+}
+
 DocScene::~DocScene() {
     if(select_box != nullptr)
         removeItem(select_box);
@@ -24,7 +29,7 @@ DocScene::~DocScene() {
 }
 
 
-void DocScene::setHightLight(QRectF rect) {
+void DocScene::setHightLight(const QRectF& rect) {
     select_box = new QGraphicsRectItem(rect);
     select_box->setBrush(QBrush(QColor(0, 0, 0, 35)));
     addItem(select_box);

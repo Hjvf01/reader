@@ -11,6 +11,7 @@ using std::make_shared;
 using std::pair;
 
 #include <QtCore/QObject>
+#include <QtCore/QDebug>
 #include <QtGui/QPixmap>
 #include <QtCore/QSize>
 #include <QtCore/QPoint>
@@ -87,19 +88,18 @@ public:
 
 
 
+
 using Link = Poppler::LinkDestination;
 class TocItem : public QStandardItem {
     Link link;
+    Link* link_ptr = nullptr;
 
 public:
     TocItem(const QString& name, const Link& _link);
     TocItem(const QString& name, Link* _link);
     ~TocItem() override;
 
-    void set(const Link& _link);
-    void set(Link* _link);
-
-    int getPage(void) const { return link.pageNumber(); }
+    int getPage(void) const;
 };
 
 
@@ -108,6 +108,7 @@ class TocModel : public QStandardItemModel {
     Q_OBJECT
 
     PDFDocPtr document;
+    QDomDocument* _toc;
 
 public:
     TocModel();
@@ -120,6 +121,7 @@ private:
     void init(QDomDocument* toc);
     void build(QDomNode root, QStandardItem* model);
 };
+
 
 
 
@@ -138,6 +140,7 @@ public:
 
     virtual QString metaInfo() const = 0;
     virtual QSize size(void) const = 0;
+    virtual QRectF documentRect(void) const = 0;
     virtual unsigned int amountPages(void) const = 0;
     virtual PDFPage* page(unsigned int index) const = 0;
 
@@ -148,6 +151,7 @@ protected:
     QString path;
     QString name;
 };
+
 
 
 
@@ -172,6 +176,7 @@ public:
 
     QString metaInfo(void) const override;
     QSize size() const override;
+    QRectF documentRect(void) const override;
     unsigned int amountPages() const override;
     PDFPage* page(unsigned int index) const override;
     PDFDocPtr getDocument(void) const { return document; }

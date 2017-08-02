@@ -1,18 +1,24 @@
 #include "handlers.h"
 
 
-DocMenuHandler::DocMenuHandler(const DocPtr& document) : QObject() {
-    ui = new DocumentMenu;
+DocMenuHandler::DocMenuHandler(const QUrl& path) : QObject() {
+    document = DocPtr(new PDFDocument(path.path(), path.fileName()));
+
+    minimap_h = new MinimapHandler(document);
+    ui = new DocumentMenu(minimap_h->getMinimap());
     toc_model = new TocModel(
         static_cast<PDFDocument*>(document.get())->getDocument(),
-        document.get()->getName()
+        path.fileName()
     );
 
     ui->getTocView()->setModel(toc_model);
     initConnectors();
 }
 
-DocMenuHandler::~DocMenuHandler() {}
+DocMenuHandler::~DocMenuHandler() {
+    delete toc_model;
+    delete minimap_h;
+}
 
 
 void DocMenuHandler::initConnectors() {

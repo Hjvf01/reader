@@ -90,10 +90,9 @@ private:
 
 
 
+using PagePtr = PageView*;
 class DocHandler : public QObject {
     Q_OBJECT
-
-    using PagePtr = PageView*;
 
     static const unsigned int buf_size = 3;
 
@@ -110,6 +109,7 @@ class DocHandler : public QObject {
 
 public:
     DocHandler(const DocPtr& doc);
+    DocHandler(const DocPtr& doc, Index index);
     ~DocHandler() override;
 
     unsigned int getCurrentPage(void) const;
@@ -156,14 +156,62 @@ signals:
 
 
 
+class MinimapHandler : public QObject {
+    Q_OBJECT
+
+    static const Size BUF_SIZE = 5;
+
+
+    Index current;
+    DocPtr document;
+    DocView* ui;
+    DocScene* scene;
+    int location = 0;
+
+    deque<PageView*> pages;
+
+    One2One<DocView, MinimapHandler> view2this;
+
+public:
+    MinimapHandler(const DocPtr& doc);
+    MinimapHandler(const DocPtr& doc, Index index);
+    ~MinimapHandler() override;
+
+    DocView* getMinimap(void) const;
+    Index getCurrent(void) const;
+    Indexes getIndexes(void) const;
+    DocScene* getScene(void) const;
+
+private slots:
+    void onScrollUp(int step);
+    void onScrollDown(int step);
+    void onScrollTriggered(int action);
+
+private:
+    void drawNext(Index index);
+    void drawPrev(Index index);
+
+    void eraseFront(Index index);
+    void eraseBack(Index index);
+
+    void start(void);
+
+    void initConnectors(void);
+};
+
+
+
+
 class DocMenuHandler : public QObject {
     Q_OBJECT
 
     DocumentMenu* ui;
+    MinimapHandler* minimap_h;
     TocModel* toc_model;
+    DocPtr document;
 
 public:
-    DocMenuHandler(const DocPtr& document);
+    DocMenuHandler(const QUrl& path);
     ~DocMenuHandler() override;
 
     DocumentMenu* getDocumentMenu(void) const { return ui; }
@@ -187,8 +235,10 @@ class DocWidgetHandler : public QObject {
     using Langs = QMap<QString, QList<QString>>;
 
     DocWidget* ui;
+    DocToolBar* tool_bar;
     DocHandler* handler;
     DocMenuHandler* doc_menu_h;
+    bool doc_menu_shown = true;
 
     DocPtr document;
 
@@ -209,6 +259,7 @@ public:
     DocWidget* getWidget(void) const;
     DocHandler* getHandler(void) const;
     BaseDocument* getDocument(void) const;
+    DocToolBar* getToolBar(void) const { return tool_bar; }
 
 private:
     void initConnectors(void);
@@ -241,6 +292,8 @@ private slots:
     void onFindDialogShow(bool);
 
     void onReload(bool);
+
+    void onDocementMenuShow(bool);
 };
 
 

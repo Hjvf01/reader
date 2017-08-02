@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include <QtWidgets/QAbstractSlider>
+#include <Qt>
 
 #include "handlers.h"
 
@@ -145,22 +146,16 @@ void DocHandler::drawFirst() {
 
 
 void DocHandler::start() {
-    #define DOC_SIZE document.get()->size()
-
     document.get()->setDpi(
         scale_factor * ui->physicalDpiX(),
         scale_factor * ui->physicalDpiY()
     );
     document.get()->init();
-    handler->getScene()->setSceneRect(
-        0, 0, DOC_SIZE.width(), DOC_SIZE.height()
-    );
+    handler->getScene()->setSceneRect(document.get()->documentRect());
     ui->setScene(handler->getScene());
 
     drawFirst();
     ui->centerOn(0, 0);
-
-    #undef DOC_SIZE
 }
 
 

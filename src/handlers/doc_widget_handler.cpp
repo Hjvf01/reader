@@ -9,17 +9,23 @@ DocWidgetHandler::DocWidgetHandler(const QUrl& path) : QObject() {
     handler = new DocHandler(document);
     ui = new DocWidget;
     ui->setCentralWidget(handler->getView());
-    ui->getToolBar()->setPageNums(
+
+    doc_menu_h = new DocMenuHandler(path);
+    ui->addDockWidget(Qt::LeftDockWidgetArea, doc_menu_h->getDocumentMenu());
+
+    tool_bar = new DocToolBar(
+        doc_menu_h->getDocumentMenu()->toggleViewAction()
+    );
+    tool_bar->setPageNums(
         QString("1"), QString::number(document.get()->amountPages())
     );
-
-    doc_menu_h = new DocMenuHandler(document);
-    ui->addDockWidget(Qt::LeftDockWidgetArea, doc_menu_h->getDocumentMenu());
+    ui->addToolBar(tool_bar);
 
     initConnectors();
 }
 
 DocWidgetHandler::~DocWidgetHandler() {
+    delete tool_bar;
     delete handler;
     delete ui;
 }
@@ -49,10 +55,10 @@ void DocWidgetHandler::initConnectors() {
         }
     );
 
-    combo_box_connector.set(ui->getToolBar()->getComboBoxes(), this);
+    combo_box_connector.set(tool_bar->getComboBoxes(), this);
     combo_box_connector.connect<const QString&>(
         vector<void (QComboBox::*)(const QString&)>{
-            ui->getToolBar()->getComboBoxesAmount(),
+            tool_bar->getComboBoxesAmount(),
             static_cast<void (QComboBox::*)(const QString&)>(
                 &QComboBox::currentIndexChanged
             )
@@ -64,10 +70,10 @@ void DocWidgetHandler::initConnectors() {
         }
     );
 
-    tool_bar_connector.set(ui->getToolBar()->getActions(), this);
+    tool_bar_connector.set(tool_bar->getActions(), this);
     tool_bar_connector.connect<bool>(
         vector<void (QAction::*)(bool)>{
-            ui->getToolBar()->getActionsAmount(),
+            tool_bar->getActionsAmount(),
             &QAction::triggered
         },
         vector<void (DocWidgetHandler::*)(bool)>{
@@ -91,7 +97,7 @@ void DocWidgetHandler::initConnectors() {
         )
     );
     connect(
-        ui->getToolBar()->getPageLine(), &QLineEdit::textEdited,
+        tool_bar->getPageLine(), &QLineEdit::textEdited,
         this, static_cast<void (DocWidgetHandler::*)(const QString&)>(
             &DocWidgetHandler::onPageChange
         )
@@ -127,18 +133,18 @@ void DocWidgetHandler::onAbsoluteScaleChanged(const QString& value) {
 }
 
 void DocWidgetHandler::onZoomIn(bool) {
-    #define INDEX        ui->getToolBar()->getScaleBox()->currentIndex()
-    #define CURRENT_TEXT ui->getToolBar()->getScaleBox()->currentText()
+    #define INDEX        tool_bar->getScaleBox()->currentIndex()
+    #define CURRENT_TEXT tool_bar->getScaleBox()->currentText()
 
     if(CURRENT_TEXT == QString("150"))
         return;
-    ui->getToolBar()->getScaleBox()->setCurrentIndex(INDEX + 1);
+    tool_bar->getScaleBox()->setCurrentIndex(INDEX + 1);
 }
 
 void DocWidgetHandler::onZoomOut(bool) {
     if(CURRENT_TEXT == QString("50"))
         return;
-    ui->getToolBar()->getScaleBox()->setCurrentIndex(INDEX - 1);
+    tool_bar->getScaleBox()->setCurrentIndex(INDEX - 1);
 
     #undef CURRENT_TEXT
     #undef INDEX
@@ -147,7 +153,7 @@ void DocWidgetHandler::onZoomOut(bool) {
 void DocWidgetHandler::onTrFromChanged(const QString& lang_name) {
     /* Устанавливает исходный язык и меняет список целевых */
 
-    QComboBox* tr_to_box = ui->getToolBar()->getTrTo();
+    QComboBox* tr_to_box = tool_bar->getTrTo();
     int count = tr_to_box->count();
     for(int i = 0; i < count; i++)
         tr_to_box->removeItem(i);
@@ -168,17 +174,17 @@ void DocWidgetHandler::onError(const QString& error_msg) {
 
 void DocWidgetHandler::onDictLangsReady(const Langs& result) {
     dict_langs = result;
-    ui->getToolBar()->getTrFrom()->addItems(dict_langs.keys());
+    tool_bar->getTrFrom()->addItems(dict_langs.keys());
 }
 
 void DocWidgetHandler::onPageChange(unsigned int index) {
-    ui->getToolBar()->setCurrentPage(QString::number(index + 1));
+    tool_bar->setCurrentPage(QString::number(index + 1));
 }
 
 void DocWidgetHandler::onPageChange(const QString &page) {
     qDebug() << "Page: " << page;
     if(page == "") {
-        ui->getToolBar()->setCurrentPage(
+        tool_bar->setCurrentPage(
             QString::number(handler->getCurrentPage())
         );
         return;
@@ -241,9 +247,22 @@ void DocWidgetHandler::onFindDialogShow(bool) {
 
 
 void DocWidgetHandler::onReload(bool) {
-    if(ui->getToolBar()->getTrFrom()->count() > 0)
+    if(tool_bar->getTrFrom()->count() > 0)
         return;
 
     emit getLangs();
 }
+
+
+void DocWidgetHandler::onDocementMenuShow(bool) {
+    if(doc_menu_shown == false) {
+        doc_menu_h->getDocumentMenu()->show();
+        doc_menu_shown = true;
+        return;
+    }
+
+    if(doc_menu_shown == true)
+        return;
+}
+
 /* end slots */

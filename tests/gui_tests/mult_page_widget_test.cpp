@@ -20,7 +20,7 @@ bool MultDocWidgetTest::compareIndexes(
 
 
 void MultDocWidgetTest::testFirstPage() {
-    #define ACT(I) controller->getWidget()->getToolBar()->getActions()[I]
+    #define ACT(I) controller->getToolBar()->getActions()[I]
     #define INDXS  controller->getHandler()->getIndexes()
 
     QAction* fst_page = ACT(3);

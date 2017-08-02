@@ -12,7 +12,7 @@ bool almostEqual(const QRectF &before, const QRectF &after, double coef) {
 BaseDocWidgetTest::BaseDocWidgetTest(const QString &name, VerbosityLevel lvl) :
         QObject() {
 
-    QUrl path(base + name);
+    QUrl path(BASE + name);
     controller = new DocWidgetHandler(path);
 
     if(lvl == VerbosityLevel::verbose) {

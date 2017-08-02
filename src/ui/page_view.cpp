@@ -1,10 +1,15 @@
 #include "ui.h"
 
 
-PageView::PageView(QPixmap pix, size_t i) : QGraphicsPixmapItem(pix) {
+
+
+
+PageView::PageView(const QPixmap& pix, Index i) : QGraphicsPixmapItem(pix) {
     index = i;
 }
+
+
 PageView::~PageView() {}
 
 
-size_t PageView::getIndex(void) const { return index; }
+Index PageView::getIndex(void) const { return index; }

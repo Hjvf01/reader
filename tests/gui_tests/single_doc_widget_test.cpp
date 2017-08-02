@@ -11,7 +11,7 @@ SingleDocWidgetTest::~SingleDocWidgetTest() {}
 
 void SingleDocWidgetTest::testZoomIn() {
     #define SCENE_RECT controller->getHandler()->getView()->sceneRect()
-    #define GET_ACT(I) controller->getWidget()->getToolBar()->getActions()[I]
+    #define GET_ACT(I) controller->getToolBar()->getActions()[I]
 
     QAction* zoom_in = GET_ACT(0);
 
@@ -65,7 +65,7 @@ void SingleDocWidgetTest::testZoomOut() {
 
 
 void SingleDocWidgetTest::testScaleBox() {
-    #define CB(I) controller->getWidget()->getToolBar()->getComboBoxes()[I]
+    #define CB(I) controller->getToolBar()->getComboBoxes()[I]
 
     vector<unsigned int> indexes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     vector<double> coefs = {

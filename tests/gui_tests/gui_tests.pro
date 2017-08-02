@@ -24,6 +24,7 @@ SOURCES +=\
     ../../src/handlers/doc_widget_handler.cpp\
     ../../src/handlers/scene_handler.cpp\
     ../../src/handlers/doc_menu_handler.cpp\
+    ../../src/handlers/minimap_handler.cpp\
     #
     ../../src/ui/doc_scene.cpp\
     ../../src/ui/doc_view.cpp\
@@ -36,6 +37,7 @@ SOURCES +=\
     ../../src/ui/document_menu.cpp\
     ../../src/ui/tr_dialog.cpp\
     ../../src/ui/find_dialog.cpp\
+    ../../src/ui/help_dialog.cpp\
     #
     ../../src/model/base_document.cpp\
     ../../src/model/page.cpp\
@@ -69,8 +71,6 @@ HEADERS +=\
     tests.h
 
 CONFIG += debug
-
-QMAKE_CXX += -O3
 
 
 RESOURCES = reader.qrc
